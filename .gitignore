@@ -1,0 +1,7 @@
+*.tlog
+deps
+*/x64
+*/*/x64
+*/.vs
+*/*.db
+*/*.opendb
