@@ -43,6 +43,8 @@ bool MyWindow::Init()
 
 	// 4. Register functions
 	glfwSetScrollCallback(window, funcScrollCallback);
+	glfwSetDropCallback(window, funcDropCallback);
+	glfwSetMouseButtonCallback(window, funcMouseCallback);
 
 	// 5. Initialize openGL
 	InitializeGL();
@@ -77,7 +79,6 @@ void MyWindow::Run()
 
 		glBindVertexArray(vaos[0]);
 		glDrawElements(GL_TRIANGLES, mesh->nTriangles()*3, GL_UNSIGNED_INT, (void*)0);
-
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -268,19 +269,20 @@ void MyWindow::MouseEvent()
 	double dx = xpos - lastCursorPosX;
 	double dy = ypos - lastCursorPosY;
 
-	// left mouse button
-	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-	if (state == GLFW_PRESS) {
-		// the left mouse is pressed
-		rx -= 8 * dy;
-		ry += 8 * dx;
+	if (gMouseButton == GLFW_MOUSE_BUTTON_LEFT) {
+		// left 
 	}
+	else if (gMouseButton == GLFW_MOUSE_BUTTON_MIDDLE) {
+		// middle, move the object
 
-	// middle mouse button
-	state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
-	if (state == GLFW_PRESS) {
-		int a = dy;
 	}
+	else if (gMouseButton == GLFW_MOUSE_BUTTON_RIGHT) {
+		// right
+	}
+	else if (gMouseButton == GLFW_MOUSE_BUTTON_LAST) {
+		// last mouse button
+	}
+	else { }
 
 	// update
 	lastCursorPosX = xpos;
