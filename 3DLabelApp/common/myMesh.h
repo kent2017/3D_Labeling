@@ -16,6 +16,7 @@ public:
 	Eigen::Matrix3Xf triangle_normals;
 	Eigen::Matrix3Xf vertex_normals;
 	Eigen::ArrayXi triangle_labels;
+	Eigen::ArrayXi vertex_labels;
 
 public:
 	typedef OpenMesh::TriMesh_ArrayKernelT<> _MyMesh;
@@ -36,7 +37,9 @@ private:
 	void UpdateTriangles();
 	void UpdateTriangleNormals();
 	void UpdateVertexNormals();
-	void UpdateVertexColors();
+
+	// labels
+	void UpdateVertexLabels();
 };
 
 #endif // !MY_MESH_H

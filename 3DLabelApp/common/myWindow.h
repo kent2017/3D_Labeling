@@ -49,8 +49,11 @@ private:
 	/** gl */
 	void BindMeshVAO(int idxMesh);
 
-	/** for test */
+	/** helper functions */
 	void _check_shader_values();
+
+	inline float _length(const glm::vec3& v)const { return std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]); }
+	inline glm::vec3 _normalize(const glm::vec3& v) const { return v / _length(v); }
 
 private:
 	/* window parameters */
@@ -58,9 +61,11 @@ private:
 	int width, height;
 	double lastCursorPosX, lastCursorPosY;
 
-	/* positions */
-	glm::vec3 pCamera;
-	glm::vec3 pTarget;		// camera to target
+	/* view & projection */
+	float fov = glm::radians(45.f);		// field of view
+	float near = 0.1f, far = 500.f;		// near and far plane for clipping objects
+	glm::vec3 pCamera;					// camera position
+	glm::vec3 pTarget = glm::vec3(0., 0., 0.);					// the target that the camera looks at
 	GLfloat rx = 0.f, ry = 0.f, rz = 0.f;
 
 	/* gl variables */

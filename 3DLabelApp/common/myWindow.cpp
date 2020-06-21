@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 
 #include "common/myWindow.h"
 #include "common/shader.hpp"
@@ -181,6 +182,7 @@ void MyWindow::InitializeGL()
 	glClearColor(1.f, 1.f, 1.0f, 0.0f);
 	//glClearDepth(2.0);
 
+	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_SMOOTH);
 
@@ -203,7 +205,7 @@ void MyWindow::InitializeGL()
 	glGenBuffers(MAX_NUM_OF_MESHES, vertexNormalBuffers);
 
 	/* 4.  */
-	pCamera = glm::vec3(0, 0, 100);
+	pCamera = glm::vec3(0, -100, 0);
 
 	GL_Initialized = true;
 }
@@ -220,14 +222,13 @@ void MyWindow::ClearGL()
 
 void MyWindow::SetMVP()
 {
-	// Projection matrix : 45?Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 1000.0f);
-	//glm::mat4 Projection = glm::frustum(-1, 1, -1, 1, 5, 705);
+	// Projection matrix : Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+	glm::mat4 Projection = glm::perspective(fov, (float)width / (float)height, near, far);
 	// Camera matrix
 	glm::mat4 View = glm::lookAt(
 		pCamera, 
-		glm::vec3(0, 0, 0),
-		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
+		pTarget,
+		glm::vec3(0, 0, -1)  // Head is up (set to 0,-1,0 to look upside-down)
 	);
 	// Model matrix : an identity matrix (model will be at the origin)
 	glm::mat4 Model = glm::mat4(1.f);
@@ -249,7 +250,13 @@ void MyWindow::ScrollEvent()
 	if (std::abs(gScrollYOffset) < 0.00001)
 		return;
 
-	pCamera += gScrollYOffset > 0.f ? glm::vec3(4, 3, -3) : -glm::vec3(4, 3, -3);
+	glm::vec3 dir = pCamera - pTarget;
+	float dist = _length(dir);
+
+	float p = 0.1f;
+	float offset = gScrollYOffset > 0.f ? (dist - near)*p : -(dist - near)*p / (1 - p);
+	pCamera += _normalize(dir) * offset;
+
 	gScrollYOffset = 0.f;
 }
 
@@ -261,7 +268,7 @@ void MyWindow::MouseEvent()
 	double dx = xpos - lastCursorPosX;
 	double dy = ypos - lastCursorPosY;
 
-	// left moush button
+	// left mouse button
 	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 	if (state == GLFW_PRESS) {
 		// the left mouse is pressed
@@ -269,11 +276,10 @@ void MyWindow::MouseEvent()
 		ry += 8 * dx;
 	}
 
-	// wheel scroll
+	// middle mouse button
 	state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
 	if (state == GLFW_PRESS) {
-		pTarget.x -= dx / 50.f;
-		pTarget.y += dy / 50.f;
+		int a = dy;
 	}
 
 	// update

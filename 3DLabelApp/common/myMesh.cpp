@@ -11,6 +11,7 @@ bool MyMesh::ReadMesh(const std::string& inputFile) {
 
 		UpdateAll();
 		triangle_labels = Eigen::ArrayXi::Zero(triangles.cols());		// initialize labels
+		vertex_labels = Eigen::ArrayXi::Zero(vertices.cols());
 		return true;
 	}
 }
@@ -96,7 +97,7 @@ void MyMesh::UpdateVertexNormals()
 	vertex_normals = mat;
 }
 
-void MyMesh::UpdateVertexColors()
+void MyMesh::UpdateVertexLabels()
 {
 }
 
