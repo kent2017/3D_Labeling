@@ -8,7 +8,7 @@ A head file storing global parameters.
 #include <vector>
 #include <string>
 
-static const glm::vec3 COLORS[] = {
+const float COLORS[9][3] = {
 	{0.9, 0.9, 0.9},
 	{1.0, 0.7, 0.0}, // yellow
 	{0.9, 0.7, 0.6}, // pink

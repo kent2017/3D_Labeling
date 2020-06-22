@@ -8,6 +8,8 @@
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 
+#include "common/parameters.h"
+
 
 class MyMesh {
 public:
@@ -15,6 +17,7 @@ public:
 	Eigen::Matrix3Xi triangles;
 	Eigen::Matrix3Xf triangle_normals;
 	Eigen::Matrix3Xf vertex_normals;
+	Eigen::Matrix3Xf vertex_colors;
 	Eigen::ArrayXi triangle_labels;
 	Eigen::ArrayXi vertex_labels;
 

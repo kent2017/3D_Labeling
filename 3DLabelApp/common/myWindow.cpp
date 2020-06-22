@@ -145,6 +145,10 @@ void MyWindow::BindMeshVAO(int idx)
 	glBindBuffer(GL_ARRAY_BUFFER, vertexNormalBuffers[idx]);
 	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->nVertices() * sizeof(float), mesh->vertex_normals.data(), GL_STATIC_DRAW);
 
+	// vertex colors
+	glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffers[idx]);
+	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->nVertices() * sizeof(float), mesh->vertex_colors.data(), GL_STATIC_DRAW);
+
 	// 3. attributes
 	// attrib buffer: vertices
 	glEnableVertexAttribArray(vPositionID);
@@ -155,6 +159,11 @@ void MyWindow::BindMeshVAO(int idx)
 	glEnableVertexAttribArray(vNormalID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexNormalBuffers[idx]);
 	glVertexAttribPointer(vNormalID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+	// attrib buffer: vertex colors
+	glEnableVertexAttribArray(vColorID);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffers[idx]);
+	glVertexAttribPointer(vColorID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	// 4. unbind buffers
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -197,12 +206,13 @@ void MyWindow::InitializeGL()
 
 	vPositionID = glGetAttribLocation(programID, "vPosition");
 	vNormalID = glGetAttribLocation(programID, "vNormal");
+	vColorID = glGetAttribLocation(programID, "vColor");
 
 	/* 3. vaos & buffers */ 
 	glGenVertexArrays(MAX_NUM_OF_MESHES, vaos);
 	glGenBuffers(MAX_NUM_OF_MESHES, vertexBuffers);
 	glGenBuffers(MAX_NUM_OF_MESHES, elementBuffers);
-	//glGenBuffers(MAX_NUM_OF_MESHES, labelBuffers);
+	glGenBuffers(MAX_NUM_OF_MESHES, vertexColorBuffers);
 	glGenBuffers(MAX_NUM_OF_MESHES, vertexNormalBuffers);
 
 	/* 4.  */
@@ -216,7 +226,7 @@ void MyWindow::ClearGL()
 	glDeleteProgram(programID);
 	glDeleteBuffers(MAX_NUM_OF_MESHES, vertexBuffers);
 	glDeleteBuffers(MAX_NUM_OF_MESHES, elementBuffers);
-	//glDeleteBuffers(MAX_NUM_OF_MESHES, labelBuffers);
+	glDeleteBuffers(MAX_NUM_OF_MESHES, vertexColorBuffers);
 	glDeleteBuffers(MAX_NUM_OF_MESHES, vertexNormalBuffers);
 	glDeleteVertexArrays(MAX_NUM_OF_MESHES, vaos);
 }
