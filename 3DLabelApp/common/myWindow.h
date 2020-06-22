@@ -39,6 +39,7 @@ private:
 	void ClearMesh();		// clear meshes, labels, etc.
 
 	void SetMVP();	// model-view-projection matrix;
+	void SetLight();
 
 	/* events */
 	void ScrollEvent();
@@ -50,6 +51,7 @@ private:
 
 	/** gl */
 	void BindMeshVAO(int idxMesh);
+	glm::vec3 TransPixelToModel(double xpos, double ypos) const;	// screen coordinates
 
 	/** helper functions */
 	void _check_shader_values();
@@ -65,18 +67,19 @@ private:
 	float near = 0.1f, far = 500.f;		// near and far plane for clipping objects
 	MyCamera camera;
 
+	glm::mat4 Model, View, Projection;
+
 	/* gl variables */
 	GLuint programID;	// shader program
 
 	GLuint modelID, viewID, projID;	// the id of mvp matrix
 	GLuint vPositionID, vNormalID, vColorID;	// the ids of vPosition, vNormal, vColor in shader
+	GLuint lightPosID;
 
 	unsigned int curVAOIdx = 0;	// current idx of the mesh
 	GLuint vaos[MAX_NUM_OF_MESHES];
 	GLuint elementBuffers[MAX_NUM_OF_MESHES];
 	GLuint vertexBuffers[MAX_NUM_OF_MESHES], vertexColorBuffers[MAX_NUM_OF_MESHES], vertexNormalBuffers[MAX_NUM_OF_MESHES];
-
-	glm::mat4 _modelMat = glm::mat4(1.0);
 
 	/**/
 	bool GL_Initialized = false;

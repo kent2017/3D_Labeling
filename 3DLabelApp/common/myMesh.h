@@ -7,6 +7,8 @@
 #include <Eigen/Core>
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "common/parameters.h"
 
@@ -32,8 +34,14 @@ public:
 	int nVertices() const { return vertices.cols(); }
 	int nTriangles() const { return triangles.cols(); }
 
+	inline const glm::vec3& Position() const { return position; }
+	inline glm::vec3& Position() { return position; }
+
+	inline glm::mat4 ModelMat() const { return glm::translate(glm::mat4(1.0), position); }
+
 private:
 	_MyMesh _mesh;
+	glm::vec3 position;
 
 	void UpdateAll();
 	void UpdateVertices();

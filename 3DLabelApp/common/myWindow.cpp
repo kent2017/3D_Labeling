@@ -56,15 +56,14 @@ void MyWindow::Run()
 {
 	while (!glfwWindowShouldClose(window)) {
 		auto mesh = meshes[curVAOIdx];
+		glfwGetWindowSize(window, &width, &height);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(programID);
 
-		ScrollEvent();
-		MouseEvent();
-
 		SetMVP();
+		SetLight();
 
 		//_check_shader_values();
 
@@ -79,6 +78,10 @@ void MyWindow::Run()
 
 		glBindVertexArray(vaos[0]);
 		glDrawElements(GL_TRIANGLES, mesh->nTriangles()*3, GL_UNSIGNED_INT, (void*)0);
+
+		// scroll & mouse event should be after the glDraw
+		ScrollEvent();
+		MouseEvent();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -170,6 +173,24 @@ void MyWindow::BindMeshVAO(int idx)
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+glm::vec3 MyWindow::TransPixelToModel(double xpos, double ypos) const
+{
+	GLfloat depth;
+	GLint winX = xpos;
+	GLint winY = height - (GLint)ypos;
+	glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);		// draw first, otherwise the depth will be always 1.0
+
+	//GLfloat clip_z = (depth - 0.5f)*2.0f;
+	//GLfloat world_z = 2.f * near * far / (clip_z * (far - near) - (far + near));
+
+	glm::vec3 winCoords(winX, winY, depth);
+	glm::vec4 viewport(0.0f, 0.0f, (float)width, (float)height);
+	glm::mat4 modelView = View * Model;
+	glm::vec3 unprojected = glm::unProject(winCoords, modelView, Projection, viewport);
+
+	return unprojected;
+}
+
 void MyWindow::_check_shader_values()
 {
 	glm::mat4 model, view, projection;
@@ -194,7 +215,7 @@ void MyWindow::InitializeGL()
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_SMOOTH);
+	//glEnable(GL_SMOOTH);
 
 	/* 2. shader */
 	programID = LoadShaders("vert.glsl", "frag.glsl");
@@ -203,6 +224,8 @@ void MyWindow::InitializeGL()
 	modelID = glGetUniformLocation(programID, "modelMat");
 	viewID = glGetUniformLocation(programID, "viewMat");
 	projID = glGetUniformLocation(programID, "projMat");
+
+	lightPosID = glGetUniformLocation(programID, "lightPos");
 
 	vPositionID = glGetAttribLocation(programID, "vPosition");
 	vNormalID = glGetAttribLocation(programID, "vNormal");
@@ -233,19 +256,21 @@ void MyWindow::ClearGL()
 
 void MyWindow::SetMVP()
 {
-	// Projection matrix : Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	glm::mat4 Projection = glm::perspective(fov, (float)width / (float)height, near, far);
-	// Camera matrix
-	glm::mat4 View = camera.Mat();
-	// Model matrix : an identity matrix (model will be at the origin)
-	glm::mat4 Model = glm::mat4(1.f);
-	_modelMat = Model * _modelMat;
-	// Our ModelViewProjection : multiplication of our 3 matrices
+	Projection = glm::perspective(fov, (float)width / (float)height, near, far);
+	View = camera.Mat();
+	Model = meshes[curVAOIdx]->ModelMat();
 	//glm::mat4 MVP = Projection * View * _modelMat; // Remember, matrix multiplication is the other way around
 
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &_modelMat[0][0]);
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, &Model[0][0]);
 	glUniformMatrix4fv(viewID, 1, GL_FALSE, &View[0][0]);
 	glUniformMatrix4fv(projID, 1, GL_FALSE, &Projection[0][0]);
+
+}
+
+void MyWindow::SetLight()
+{
+	glm::vec3 pos = camera.Eye();
+	glUniform3f(lightPosID, pos.x, pos.y, pos.z);
 }
 
 void MyWindow::ScrollEvent()
@@ -271,23 +296,28 @@ void MyWindow::MouseEvent()
 	double dx = xpos - lastCursorPosX;
 	double dy = ypos - lastCursorPosY;
 
-	if (gMouseButton == GLFW_MOUSE_BUTTON_LEFT) {
-		// left 
-		if (gMouseState == GLFW_PRESS) {
+	std::shared_ptr<MyMesh> mesh = meshes[curVAOIdx];
+
+	if (gMouseState == GLFW_PRESS) {
+		if (gMouseButton == GLFW_MOUSE_BUTTON_LEFT) {
+			// left 
 			camera.Rotate(-dx / 500.f, dy / 500.f);
 		}
+		else if (gMouseButton == GLFW_MOUSE_BUTTON_MIDDLE) {
+			// middle, move the object
+			TransPixelToModel(xpos, ypos);
+			glm::vec4 viewport(0, 0, width, height);
+			glm::vec3 projected = glm::project(mesh->Position(), View*Model, Projection, viewport);
+			mesh->Position() = glm::unProject(projected + glm::vec3(dx, -dy, 0.), View*Model, Projection, viewport);
+		}
+		else if (gMouseButton == GLFW_MOUSE_BUTTON_RIGHT) {
+			// right
+		}
+		else if (gMouseButton == GLFW_MOUSE_BUTTON_LAST) {
+			// last mouse button
+		}
+		else {}
 	}
-	else if (gMouseButton == GLFW_MOUSE_BUTTON_MIDDLE) {
-		// middle, move the object
-
-	}
-	else if (gMouseButton == GLFW_MOUSE_BUTTON_RIGHT) {
-		// right
-	}
-	else if (gMouseButton == GLFW_MOUSE_BUTTON_LAST) {
-		// last mouse button
-	}
-	else { }
 
 	// update
 	lastCursorPosX = xpos;

@@ -12,9 +12,9 @@ public:
 		_rotate = glm::mat4(1.0f);
 	}
 
-	inline const glm::vec3& Eye() const { return _eye; }
-	inline const glm::vec3& Center() const { return _center; }
-	inline const glm::vec3& Up() const { return _up; }
+	inline glm::vec3 Eye() const { return _rotate*_eye; }
+	inline glm::vec3 Center() const { return _center; }
+	inline glm::vec3 Up() const { return _rotate*_up; }
 
 	glm::mat4 Mat() const { return glm::lookAt(_rotate*_eye , _center, _rotate*_up); }
 
