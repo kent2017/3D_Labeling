@@ -53,6 +53,9 @@
     <ClInclude Include="..\common\parameters.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="..\common\myCamera.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="frag.glsl">

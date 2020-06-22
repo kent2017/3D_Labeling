@@ -157,6 +157,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\control.h" />
+    <ClInclude Include="..\common\myCamera.h" />
     <ClInclude Include="..\common\myMesh.h" />
     <ClInclude Include="..\common\parameters.h" />
     <ClInclude Include="..\common\shader.hpp" />

@@ -216,7 +216,7 @@ void MyWindow::InitializeGL()
 	glGenBuffers(MAX_NUM_OF_MESHES, vertexNormalBuffers);
 
 	/* 4.  */
-	pCamera = glm::vec3(0, -100, 0);
+	camera = MyCamera(glm::vec3(0, -100, 0), glm::vec3(0, 0, 0), glm::vec3(0, 0, -1));
 
 	GL_Initialized = true;
 }
@@ -236,17 +236,9 @@ void MyWindow::SetMVP()
 	// Projection matrix : Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	glm::mat4 Projection = glm::perspective(fov, (float)width / (float)height, near, far);
 	// Camera matrix
-	glm::mat4 View = glm::lookAt(
-		pCamera, 
-		pTarget,
-		glm::vec3(0, 0, -1)  // Head is up (set to 0,-1,0 to look upside-down)
-	);
+	glm::mat4 View = camera.Mat();
 	// Model matrix : an identity matrix (model will be at the origin)
 	glm::mat4 Model = glm::mat4(1.f);
-	Model = glm::rotate(Model, rx / 16.f / 80.f, glm::vec3(1., 0., 0.));
-	Model = glm::rotate(Model, ry / 16.f / 80.f, glm::vec3(0., 1., 0.));
-	Model = glm::rotate(Model, rz / 16.f / 80.f, glm::vec3(0., 0., 1.));
-	rx = ry = rz = 0;
 	_modelMat = Model * _modelMat;
 	// Our ModelViewProjection : multiplication of our 3 matrices
 	//glm::mat4 MVP = Projection * View * _modelMat; // Remember, matrix multiplication is the other way around
@@ -261,12 +253,12 @@ void MyWindow::ScrollEvent()
 	if (std::abs(gScrollYOffset) < 0.00001)
 		return;
 
-	glm::vec3 dir = pCamera - pTarget;
-	float dist = _length(dir);
+	glm::vec3 dir = camera.Eye() - camera.Center();
+	float dist = glm::length(dir);
 
 	float p = 0.1f;
 	float offset = gScrollYOffset > 0.f ? (dist - near)*p : -(dist - near)*p / (1 - p);
-	pCamera += _normalize(dir) * offset;
+	camera.Move(offset);
 
 	gScrollYOffset = 0.f;
 }
@@ -281,6 +273,9 @@ void MyWindow::MouseEvent()
 
 	if (gMouseButton == GLFW_MOUSE_BUTTON_LEFT) {
 		// left 
+		if (gMouseState == GLFW_PRESS) {
+			camera.Rotate(-dx / 500.f, dy / 500.f);
+		}
 	}
 	else if (gMouseButton == GLFW_MOUSE_BUTTON_MIDDLE) {
 		// middle, move the object

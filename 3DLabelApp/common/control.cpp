@@ -6,7 +6,7 @@ double gScrollYOffset = 0.f;
 
 std::vector<std::string> gPaths;
 
-int gMouseButton = 0;		// left, middle, right, etc..
+int gMouseButton = -1;		// left, middle, right, etc..
 int gModifierKey = 0;		// shift, alt, control, ...
 int gMouseState = GLFW_RELEASE;			// press or release
 

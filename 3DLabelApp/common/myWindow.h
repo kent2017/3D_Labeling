@@ -8,7 +8,8 @@
 
 #include "common/control.h"
 #include "common/parameters.h"
-#include "common/MyMesh.h"
+#include "common/myMesh.h"
+#include "common/myCamera.h"
 
 #define MAX_NUM_OF_MESHES 2
 
@@ -53,9 +54,6 @@ private:
 	/** helper functions */
 	void _check_shader_values();
 
-	inline float _length(const glm::vec3& v)const { return std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]); }
-	inline glm::vec3 _normalize(const glm::vec3& v) const { return v / _length(v); }
-
 private:
 	/* window parameters */
 	GLFWwindow* window = nullptr;
@@ -65,9 +63,7 @@ private:
 	/* view & projection */
 	float fov = glm::radians(45.f);		// field of view
 	float near = 0.1f, far = 500.f;		// near and far plane for clipping objects
-	glm::vec3 pCamera;					// camera position
-	glm::vec3 pTarget = glm::vec3(0., 0., 0.);					// the target that the camera looks at
-	GLfloat rx = 0.f, ry = 0.f, rz = 0.f;
+	MyCamera camera;
 
 	/* gl variables */
 	GLuint programID;	// shader program
