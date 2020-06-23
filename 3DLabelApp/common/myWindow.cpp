@@ -196,6 +196,19 @@ glm::vec3 MyWindow::TransPixelToModel(double xpos, double ypos) const
 	return unprojected;
 }
 
+void MyWindow::LabelMesh()
+{
+	auto mesh = meshes[curVAOIdx];
+	Eigen::Matrix4f mvp = GlmToEigen(Projection*View*Model);
+
+	labelTool.Set(mvp, 0, 0, width, height);
+	auto triangleLabels = labelTool.CalcTriangleLabels(mesh->vertices, mesh->triangles);
+	labelTool.Clear();		// remember clear
+
+	if (triangleLabels.cols() == mesh->triangle_labels.cols())
+		mesh->triangle_labels = triangleLabels;
+}
+
 void MyWindow::_check_shader_values()
 {
 	glm::mat4 model, view, projection;
@@ -204,6 +217,17 @@ void MyWindow::_check_shader_values()
 	glGetUniformfv(programID, projID, &projection[0][0]);
 	
 	int a = 0;
+}
+
+Eigen::Matrix4f MyWindow::GlmToEigen(const glm::mat4 & mat)
+{
+	Eigen::Matrix4f m;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			m(i, j) = mat[i][j];
+		}
+	}
+	return m;
 }
 
 void MyWindow::ClearMesh()
@@ -306,11 +330,17 @@ void MyWindow::MouseEvent()
 	if (gMouseState == GLFW_PRESS) {
 		if (gMouseButton == GLFW_MOUSE_BUTTON_LEFT) {
 			// left 
-			camera.Rotate(-dx / 500.f, dy / 500.f);
+			if (gModifierKey == GLFW_MOD_CONTROL) {
+				// control + left
+				windowState = WINDOW_MOD_LABEL;		// set window state
+				labelTool.pushback(xpos, ypos);
+			}
+			else {
+				camera.Rotate(-dx / 500.f, dy / 500.f);
+			}
 		}
 		else if (gMouseButton == GLFW_MOUSE_BUTTON_MIDDLE) {
 			// middle, move the object
-			TransPixelToModel(xpos, ypos);
 			glm::vec4 viewport(0, 0, width, height);
 			glm::vec3 projected = glm::project(mesh->Position(), View*Model, Projection, viewport);
 			mesh->Position() = glm::unProject(projected + glm::vec3(dx, -dy, 0.), View*Model, Projection, viewport);
@@ -322,6 +352,16 @@ void MyWindow::MouseEvent()
 			// last mouse button
 		}
 		else {}
+	}
+	else {
+		// released
+		if (gMouseButton == GLFW_MOUSE_BUTTON_LEFT) {
+			// left
+			if (windowState == WINDOW_MOD_LABEL) {
+				LabelMesh();
+				windowState = WINDOW_MOD_DEFAULT;
+			}
+		}
 	}
 
 	// update

@@ -5,6 +5,10 @@ A head file storing global parameters.
 #ifndef PARAMETERS_H
 #define PARAMETERS_H
 
+/* window states */
+#define WINDOW_MOD_DEFAULT 0
+#define WINDOW_MOD_LABEL 1		// labeling mesh
+
 #include <vector>
 #include <string>
 

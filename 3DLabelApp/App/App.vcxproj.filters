@@ -36,6 +36,9 @@
     <ClCompile Include="..\common\myMesh.cpp">
       <Filter>common</Filter>
     </ClCompile>
+    <ClCompile Include="..\common\labelTool.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\shader.hpp">
@@ -54,6 +57,9 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\common\myCamera.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\labelTool.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>

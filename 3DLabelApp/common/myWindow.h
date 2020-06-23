@@ -10,6 +10,7 @@
 #include "common/parameters.h"
 #include "common/myMesh.h"
 #include "common/myCamera.h"
+#include "common/labelTool.h"
 
 #define MAX_NUM_OF_MESHES 2
 
@@ -53,14 +54,21 @@ private:
 	void BindMeshVAO(int idxMesh);
 	glm::vec3 TransPixelToModel(double xpos, double ypos) const;	// screen coordinates
 
+	/** editing mode */
+	void LabelMesh();
+
 	/** helper functions */
 	void _check_shader_values();
+	Eigen::Matrix4f GlmToEigen(const glm::mat4& mat);
 
 private:
 	/* window parameters */
 	GLFWwindow* window = nullptr;
 	int width, height;
 	double lastCursorPosX, lastCursorPosY;
+
+	/* window state */
+	int windowState = WINDOW_MOD_DEFAULT;
 
 	/* view & projection */
 	float fov = glm::radians(45.f);		// field of view
@@ -89,6 +97,9 @@ private:
 
 	/* file info */
 	std::string meshFile;
+
+	/* label tool */
+	LabelTool labelTool;
 };
 
 #endif	// MY_WINDOW_H

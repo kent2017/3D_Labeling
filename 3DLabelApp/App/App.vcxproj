@@ -150,6 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\common\control.cpp" />
+    <ClCompile Include="..\common\labelTool.cpp" />
     <ClCompile Include="..\common\myMesh.cpp" />
     <ClCompile Include="..\common\shader.cpp" />
     <ClCompile Include="..\common\myWindow.cpp" />
@@ -157,6 +158,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\control.h" />
+    <ClInclude Include="..\common\labelTool.h" />
     <ClInclude Include="..\common\myCamera.h" />
     <ClInclude Include="..\common\myMesh.h" />
     <ClInclude Include="..\common\parameters.h" />
