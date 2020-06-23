@@ -53,6 +53,8 @@ private:
 	/** gl */
 	void BindMeshVAO(int idxMesh);
 	glm::vec3 TransPixelToModel(double xpos, double ypos) const;	// screen coordinates
+	 
+	void UpdateColors();
 
 	/** editing mode */
 	void LabelMesh();
@@ -69,10 +71,11 @@ private:
 
 	/* window state */
 	int windowState = WINDOW_MOD_DEFAULT;
+	bool labelUpdated = false;
 
 	/* view & projection */
 	float fov = glm::radians(45.f);		// field of view
-	float near = 0.1f, far = 500.f;		// near and far plane for clipping objects
+	float near = 0.3f, far = 500.f;		// near and far plane for clipping objects
 	MyCamera camera;
 
 	glm::mat4 Model, View, Projection;

@@ -65,7 +65,10 @@ void MyWindow::Run()
 		SetMVP();
 		SetLight();
 
-		//_check_shader_values();
+		if (labelUpdated) {
+			UpdateColors();
+			labelUpdated = false;
+		}
 
 		// attrib
 		glEnableVertexAttribArray(vPositionID);
@@ -180,7 +183,7 @@ void MyWindow::BindMeshVAO(int idx)
 
 glm::vec3 MyWindow::TransPixelToModel(double xpos, double ypos) const
 {
-	GLfloat depth;
+	GLfloat depth;			// depth is in [0, 1]
 	GLint winX = xpos;
 	GLint winY = height - (GLint)ypos;
 	glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);		// draw first, otherwise the depth will be always 1.0
@@ -196,17 +199,27 @@ glm::vec3 MyWindow::TransPixelToModel(double xpos, double ypos) const
 	return unprojected;
 }
 
+void MyWindow::UpdateColors()
+{
+	auto mesh = meshes[curVAOIdx];
+	mesh->UpdateVertexColors();
+	glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffers[curVAOIdx]);
+	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->nVertices() * sizeof(float), mesh->vertex_colors.data(), GL_STATIC_DRAW);
+}
+
 void MyWindow::LabelMesh()
 {
 	auto mesh = meshes[curVAOIdx];
 	Eigen::Matrix4f mvp = GlmToEigen(Projection*View*Model);
 
 	labelTool.Set(mvp, 0, 0, width, height);
-	auto triangleLabels = labelTool.CalcTriangleLabels(mesh->vertices, mesh->triangles);
+	auto vertexLabels = labelTool.CalcVertexLabels(mesh->vertices, mesh->triangles);
 	labelTool.Clear();		// remember clear
 
-	if (triangleLabels.cols() == mesh->triangle_labels.cols())
-		mesh->triangle_labels = triangleLabels;
+	if (vertexLabels.cols() == mesh->vertex_labels.cols()) {
+		mesh->vertex_labels = vertexLabels;
+		//mesh->UpdateVertexLabels();
+	}
 }
 
 void MyWindow::_check_shader_values()
@@ -224,7 +237,7 @@ Eigen::Matrix4f MyWindow::GlmToEigen(const glm::mat4 & mat)
 	Eigen::Matrix4f m;
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			m(i, j) = mat[i][j];
+			m(i, j) = mat[j][i];
 		}
 	}
 	return m;
@@ -307,12 +320,8 @@ void MyWindow::ScrollEvent()
 	if (std::abs(gScrollYOffset) < 0.00001)
 		return;
 
-	glm::vec3 dir = camera.Eye() - camera.Center();
-	float dist = glm::length(dir);
-
-	float p = 0.1f;
-	float offset = gScrollYOffset > 0.f ? (dist - near)*p : -(dist - near)*p / (1 - p);
-	camera.Move(offset);
+	float p = std::min(0.15f, meshes[curVAOIdx]->Scale()[0]*0.25f);
+	meshes[curVAOIdx]->Scale() += gScrollYOffset > 0.f ? -p : p;
 
 	gScrollYOffset = 0.f;
 }
@@ -333,7 +342,14 @@ void MyWindow::MouseEvent()
 			if (gModifierKey == GLFW_MOD_CONTROL) {
 				// control + left
 				windowState = WINDOW_MOD_LABEL;		// set window state
-				labelTool.pushback(xpos, ypos);
+
+				// get depth
+				GLfloat depth;
+				GLint winX = xpos;
+				GLint winY = height - (GLint)ypos;
+				glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);		// draw first, otherwise the depth will be always 1.0
+
+				labelTool.pushback(xpos, ypos, depth);
 			}
 			else {
 				camera.Rotate(-dx / 500.f, dy / 500.f);
@@ -343,6 +359,7 @@ void MyWindow::MouseEvent()
 			// middle, move the object
 			glm::vec4 viewport(0, 0, width, height);
 			glm::vec3 projected = glm::project(mesh->Position(), View*Model, Projection, viewport);
+
 			mesh->Position() = glm::unProject(projected + glm::vec3(dx, -dy, 0.), View*Model, Projection, viewport);
 		}
 		else if (gMouseButton == GLFW_MOUSE_BUTTON_RIGHT) {
@@ -359,6 +376,7 @@ void MyWindow::MouseEvent()
 			// left
 			if (windowState == WINDOW_MOD_LABEL) {
 				LabelMesh();
+				labelUpdated = true;
 				windowState = WINDOW_MOD_DEFAULT;
 			}
 		}

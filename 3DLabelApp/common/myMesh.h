@@ -37,11 +37,18 @@ public:
 	inline const glm::vec3& Position() const { return position; }
 	inline glm::vec3& Position() { return position; }
 
-	inline glm::mat4 ModelMat() const { return glm::translate(glm::mat4(1.0), position); }
+	inline const glm::vec3& Scale() const { return scale; }
+	inline glm::vec3& Scale() { return scale; }
+
+	inline glm::mat4 ModelMat() const { return glm::scale(glm::translate(glm::mat4(1.0), position), scale); }
+
+	void UpdateVertexLabels();
+	void UpdateVertexColors();
 
 private:
 	_MyMesh _mesh;
 	glm::vec3 position;
+	glm::vec3 scale = glm::vec3(1., 1., 1.);
 
 	void UpdateAll();
 	void UpdateVertices();
@@ -50,7 +57,6 @@ private:
 	void UpdateVertexNormals();
 
 	// labels
-	void UpdateVertexLabels();
 };
 
 #endif // !MY_MESH_H

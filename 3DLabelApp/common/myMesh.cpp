@@ -13,11 +13,7 @@ bool MyMesh::ReadMesh(const std::string& inputFile) {
 		triangle_labels = Eigen::ArrayXi::Zero(triangles.cols());		// initialize labels
 		vertex_labels = Eigen::ArrayXi::Zero(vertices.cols());
 		vertex_colors = Eigen::Matrix3Xf(3, vertices.cols());
-		for (int i = 0; i < vertex_colors.cols(); i++) {
-			vertex_colors(0, i) = COLORS[0][0];
-			vertex_colors(1, i) = COLORS[0][1];
-			vertex_colors(2, i) = COLORS[0][2];
-		}
+		UpdateVertexColors();
 
 		return true;
 	}
@@ -106,5 +102,25 @@ void MyMesh::UpdateVertexNormals()
 
 void MyMesh::UpdateVertexLabels()
 {
+	vertex_labels = Eigen::ArrayXi::Zero(vertices.cols());
+
+	for (int i = 0; i < triangles.cols(); i++) {
+		if (triangle_labels(i) == 1) {
+			for (int j = 0; j < 3; j++) {
+				int v_idx = triangles(j, i);
+				vertex_labels(v_idx) = 1;
+			}
+		}
+	}
+}
+
+void MyMesh::UpdateVertexColors()
+{
+	for (int i = 0; i < vertex_colors.cols(); i++) {
+		int k = vertex_labels(i);
+		vertex_colors(0, i) = COLORS[k][0];
+		vertex_colors(1, i) = COLORS[k][1];
+		vertex_colors(2, i) = COLORS[k][2];
+	}
 }
 
