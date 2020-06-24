@@ -255,9 +255,11 @@ void MyWindow::InitializeGL()
 	glClearColor(1.f, 1.f, 1.0f, 0.0f);
 	//glClearDepth(2.0);
 
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_SMOOTH);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	/* 2. shader */
 	programID = LoadShaders("vert.glsl", "frag.glsl");
