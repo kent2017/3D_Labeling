@@ -148,5 +148,13 @@ Eigen::ArrayXi LabelTool::IsFront(const Eigen::Matrix3Xf & points, const Eigen::
 {
 	float depth_min = points.row(2).minCoeff();
 	float depth_max = points.row(2).maxCoeff();
+
+	float depth_front = poly.row(2).minCoeff();
+
+	Eigen::ArrayXi ret(points.cols());
+	for (int i = 0; i < points.cols(); i++) {
+
+	}
+
 	return Eigen::ArrayXi();
 }
