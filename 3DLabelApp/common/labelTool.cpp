@@ -44,11 +44,12 @@ Eigen::ArrayXi LabelTool::CalcVertexLabels(const Eigen::Matrix3Xf & vertices, co
 	Eigen::Matrix3Xf polygon = GetViewportCoordFromScreen();
 
 	// 2. get the indices of the vertices inside the polygon whose vertices are the pixels
-	Eigen::MatrixXi isInside = IsInsidePolygon(projVertices, polygon);
+	Eigen::ArrayXi isInside = IsInsidePolygon(projVertices, polygon);
 
-	// 3. get the indices
+	// 3. get the indices of the vertices on the front side
+	Eigen::ArrayXi isFront = IsFront(projVertices, polygon);
 
-	ret = isInside;
+	ret = isInside*isFront;
 	return ret;
 }
 
@@ -141,4 +142,11 @@ Eigen::ArrayXi LabelTool::IsInsidePolygon(const Eigen::Matrix3Xf & points, const
 	}
 
 	return ret;
+}
+
+Eigen::ArrayXi LabelTool::IsFront(const Eigen::Matrix3Xf & points, const Eigen::Matrix3Xf & poly) const
+{
+	float depth_min = points.row(2).minCoeff();
+	float depth_max = points.row(2).maxCoeff();
+	return Eigen::ArrayXi();
 }

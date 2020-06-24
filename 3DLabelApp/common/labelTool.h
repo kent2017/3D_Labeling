@@ -23,6 +23,7 @@ private:
 	Eigen::Matrix3Xf GetViewportCoordFromScreen() const;
 
 	Eigen::ArrayXi IsInsidePolygon(const Eigen::Matrix3Xf& points, const Eigen::Matrix3Xf& poly) const;
+	Eigen::ArrayXi IsFront(const Eigen::Matrix3Xf& points, const Eigen::Matrix3Xf& poly) const;
 
 private:
 	Eigen::Matrix4f mvp;
