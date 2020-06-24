@@ -13,7 +13,11 @@ bool MyMesh::ReadMesh(const std::string& inputFile) {
 		triangle_labels = Eigen::ArrayXi::Zero(triangles.cols());		// initialize labels
 		vertex_labels = Eigen::ArrayXi::Zero(vertices.cols());
 		vertex_colors = Eigen::Matrix3Xf(3, vertices.cols());
+
 		UpdateVertexColors();
+
+		dup_vertex_labels = Eigen::ArrayXi::Zero(dup_vertices.cols());
+		UpdateDupVertexColors();
 
 		return true;
 	}
@@ -25,6 +29,10 @@ void MyMesh::UpdateAll()
 	UpdateTriangles();
 	UpdateVertexNormals();
 	UpdateTriangleNormals();
+	
+	// dup
+	UpdateDupVertices();
+	UpdateDupVertexNormals();
 }
 
 void MyMesh::UpdateVertices()
@@ -100,6 +108,35 @@ void MyMesh::UpdateVertexNormals()
 	vertex_normals = mat;
 }
 
+void MyMesh::UpdateDupVertices()
+{
+	Eigen::Matrix3Xf v(3, nTriangles()*3);
+
+	int v_idx = 0;
+	for (int i = 0; i < nTriangles(); i++) {
+		for (int k = 0; k < 3; k++) {
+			int _i = triangles(k, i);
+			
+			v.col(v_idx) = vertices.col(_i);
+			v_idx++;
+		}
+	}
+
+	dup_vertices = v;
+}
+
+void MyMesh::UpdateDupVertexNormals()
+{
+	dup_vertex_normals = Eigen::Matrix3Xf(3, nTriangles() * 3);
+
+	for (int i = 0; i < nTriangles(); i++) {
+		dup_vertex_normals.col(3 * i) = triangle_normals.col(i);
+		dup_vertex_normals.col(3 * i + 1) = triangle_normals.col(i);
+		dup_vertex_normals.col(3 * i + 2) = triangle_normals.col(i);
+	}
+
+}
+
 void MyMesh::UpdateVertexLabels()
 {
 	vertex_labels = Eigen::ArrayXi::Zero(vertices.cols());
@@ -121,6 +158,47 @@ void MyMesh::UpdateVertexColors()
 		vertex_colors(0, i) = COLORS[k][0];
 		vertex_colors(1, i) = COLORS[k][1];
 		vertex_colors(2, i) = COLORS[k][2];
+	}
+
+	for (int i = 0; i < triangle_labels.cols(); i++) {
+	}
+}
+
+void MyMesh::UpdateTriangleLabelsFromVertexLabels()
+{
+	// make sure vertex_labels are updated
+	triangle_labels = Eigen::ArrayXi(nTriangles());
+
+	for (int i = 0; i < nTriangles(); i++) {
+		int _min = 0;
+		for (int j = 0; j < 3; j++) {
+			int idx = triangles(j, i);
+			_min = std::max(_min, vertex_labels(idx));
+		}
+
+		triangle_labels(i) = _min;
+	}
+}
+
+void MyMesh::UpdateDupVertexLabels()
+{
+	dup_vertex_labels = Eigen::ArrayXi(dup_vertices.cols());
+	// make sure triangle labels are updated
+	for (int i = 0; i < nTriangles(); i++) {
+		dup_vertex_labels(3*i) = triangle_labels(i);
+		dup_vertex_labels(3*i+1) = triangle_labels(i);
+		dup_vertex_labels(3*i+2) = triangle_labels(i);
+	}
+}
+
+void MyMesh::UpdateDupVertexColors()
+{
+	dup_vertex_colors = Eigen::Matrix3Xf(3, dup_vertices.cols());
+	for (int i = 0; i < dup_vertices.cols(); i++) {
+		int k = dup_vertex_labels(i);
+		dup_vertex_colors(0, i) = COLORS[k][0];
+		dup_vertex_colors(1, i) = COLORS[k][1];
+		dup_vertex_colors(2, i) = COLORS[k][2];
 	}
 }
 

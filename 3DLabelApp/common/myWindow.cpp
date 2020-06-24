@@ -84,7 +84,8 @@ void MyWindow::Run()
 		glVertexAttribPointer(vColorID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		glBindVertexArray(vaos[0]);
-		glDrawElements(GL_TRIANGLES, mesh->nTriangles()*3, GL_UNSIGNED_INT, (void*)0);
+		//glDrawElements(GL_TRIANGLES, mesh->nTriangles()*3, GL_UNSIGNED_INT, (void*)0);
+		glDrawArrays(GL_TRIANGLES, 0, mesh->dup_vertices.cols());
 
 		// scroll & mouse event should be after the glDraw
 		ScrollEvent();
@@ -150,19 +151,19 @@ void MyWindow::BindMeshVAO(int idx)
 	// 2. buffer data
 	// vertices
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[idx]);
-	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->nVertices() * sizeof(float), &mesh->vertices(0, 0), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->dup_vertices.cols() * sizeof(float), &mesh->dup_vertices(0, 0), GL_STATIC_DRAW);
 
 	// elements
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffers[idx]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * mesh->nTriangles() * sizeof(mesh->triangles(0, 0)), &mesh->triangles(0, 0), GL_STATIC_DRAW);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffers[idx]);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * mesh->nTriangles() * sizeof(mesh->triangles(0, 0)), &mesh->triangles(0, 0), GL_STATIC_DRAW);
 
 	// vertex normals
 	glBindBuffer(GL_ARRAY_BUFFER, vertexNormalBuffers[idx]);
-	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->nVertices() * sizeof(float), mesh->vertex_normals.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->dup_vertex_normals.cols() * sizeof(float), mesh->dup_vertex_normals.data(), GL_STATIC_DRAW);
 
 	// vertex colors
 	glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffers[idx]);
-	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->nVertices() * sizeof(float), mesh->vertex_colors.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->dup_vertex_colors.cols() * sizeof(float), mesh->dup_vertex_colors.data(), GL_STATIC_DRAW);
 
 	// 3. attributes
 	// attrib buffer: vertices
@@ -202,9 +203,10 @@ glm::vec3 MyWindow::TransPixelToModel(double xpos, double ypos) const
 void MyWindow::UpdateColors()
 {
 	auto mesh = meshes[curVAOIdx];
-	mesh->UpdateVertexColors();
+	//mesh->UpdateVertexColors();
+	mesh->UpdateDupVertexColors();
 	glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffers[curVAOIdx]);
-	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->nVertices() * sizeof(float), mesh->vertex_colors.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->dup_vertex_colors.cols() * sizeof(float), mesh->dup_vertex_colors.data(), GL_STATIC_DRAW);
 }
 
 void MyWindow::LabelMesh()
@@ -218,7 +220,8 @@ void MyWindow::LabelMesh()
 
 	if (vertexLabels.cols() == mesh->vertex_labels.cols()) {
 		mesh->vertex_labels = vertexLabels;
-		//mesh->UpdateVertexLabels();
+		mesh->UpdateTriangleLabelsFromVertexLabels();
+		mesh->UpdateDupVertexLabels();
 	}
 }
 
@@ -278,7 +281,7 @@ void MyWindow::InitializeGL()
 	/* 3. vaos & buffers */ 
 	glGenVertexArrays(MAX_NUM_OF_MESHES, vaos);
 	glGenBuffers(MAX_NUM_OF_MESHES, vertexBuffers);
-	glGenBuffers(MAX_NUM_OF_MESHES, elementBuffers);
+	//glGenBuffers(MAX_NUM_OF_MESHES, elementBuffers);
 	glGenBuffers(MAX_NUM_OF_MESHES, vertexColorBuffers);
 	glGenBuffers(MAX_NUM_OF_MESHES, vertexNormalBuffers);
 
@@ -292,7 +295,7 @@ void MyWindow::ClearGL()
 {
 	glDeleteProgram(programID);
 	glDeleteBuffers(MAX_NUM_OF_MESHES, vertexBuffers);
-	glDeleteBuffers(MAX_NUM_OF_MESHES, elementBuffers);
+	//glDeleteBuffers(MAX_NUM_OF_MESHES, elementBuffers);
 	glDeleteBuffers(MAX_NUM_OF_MESHES, vertexColorBuffers);
 	glDeleteBuffers(MAX_NUM_OF_MESHES, vertexNormalBuffers);
 	glDeleteVertexArrays(MAX_NUM_OF_MESHES, vaos);

@@ -103,6 +103,11 @@ private:
 
 	/* label tool */
 	LabelTool labelTool;
+
+	/* vertices & colors */
+	Eigen::Matrix3Xf vertices;		//duplicated
+	Eigen::Matrix3Xf v_normals;
+	Eigen::Matrix3Xf v_colors;		// 
 };
 
 #endif	// MY_WINDOW_H

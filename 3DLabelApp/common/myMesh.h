@@ -15,13 +15,18 @@
 
 class MyMesh {
 public:
-	Eigen::Matrix3Xf vertices;
+	Eigen::Matrix3Xf vertices;	// no duplicates
 	Eigen::Matrix3Xi triangles;
 	Eigen::Matrix3Xf triangle_normals;
 	Eigen::Matrix3Xf vertex_normals;
 	Eigen::Matrix3Xf vertex_colors;
 	Eigen::ArrayXi triangle_labels;
 	Eigen::ArrayXi vertex_labels;
+
+	Eigen::Matrix3Xf dup_vertices;	// duplicates, for render, (n_f * 3, 3)
+	Eigen::Matrix3Xf dup_vertex_normals;
+	Eigen::Matrix3Xf dup_vertex_colors;
+	Eigen::ArrayXi dup_vertex_labels;
 
 public:
 	typedef OpenMesh::TriMesh_ArrayKernelT<> _MyMesh;
@@ -45,6 +50,12 @@ public:
 	void UpdateVertexLabels();
 	void UpdateVertexColors();
 
+	void UpdateTriangleLabelsFromVertexLabels();
+
+	// update dup
+	void UpdateDupVertexLabels();
+	void UpdateDupVertexColors();
+
 private:
 	_MyMesh _mesh;
 	glm::vec3 position;
@@ -55,6 +66,10 @@ private:
 	void UpdateTriangles();
 	void UpdateTriangleNormals();
 	void UpdateVertexNormals();
+
+	// duplicate vertices
+	void UpdateDupVertices();
+	void UpdateDupVertexNormals();
 
 	// labels
 };
