@@ -45,6 +45,7 @@ private:
 	/* events */
 	void ScrollEvent();
 	void MouseEvent();
+	void KeyEvent();
 
 	/** IO */
 	void ReadLabelFile_TXT(const std::string& txtFile);

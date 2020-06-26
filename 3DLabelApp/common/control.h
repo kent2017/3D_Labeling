@@ -14,5 +14,6 @@
 void funcScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void funcDropCallback(GLFWwindow* window, int path_count, const char* paths[]);		// drag paths onto the window
 void funcMouseCallback(GLFWwindow* window, int button, int action, int mods);
+void funcKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 #endif

@@ -19,6 +19,9 @@ bool MyMesh::ReadMesh(const std::string& inputFile) {
 		dup_vertex_labels = Eigen::ArrayXi::Zero(dup_vertices.cols());
 		UpdateDupVertexColors();
 
+		Eigen::Vector3f p = vertices.rowwise().mean();
+		translation = -glm::vec3(p(0), p(1), p(2));
+
 		return true;
 	}
 }
@@ -170,10 +173,10 @@ void MyMesh::UpdateTriangleLabelsFromVertexLabels()
 	triangle_labels = Eigen::ArrayXi(nTriangles());
 
 	for (int i = 0; i < nTriangles(); i++) {
-		int _min = 0;
+		int _min = 1000;
 		for (int j = 0; j < 3; j++) {
 			int idx = triangles(j, i);
-			_min = std::max(_min, vertex_labels(idx));
+			_min = std::min(_min, vertex_labels(idx));
 		}
 
 		triangle_labels(i) = _min;

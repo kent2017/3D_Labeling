@@ -45,6 +45,7 @@ bool MyWindow::Init()
 	glfwSetScrollCallback(window, funcScrollCallback);
 	glfwSetDropCallback(window, funcDropCallback);
 	glfwSetMouseButtonCallback(window, funcMouseCallback);
+	glfwSetKeyCallback(window, funcKeyCallback);
 
 	// 5. Initialize openGL
 	InitializeGL();
@@ -90,6 +91,7 @@ void MyWindow::Run()
 		// scroll & mouse event should be after the glDraw
 		ScrollEvent();
 		MouseEvent();
+		KeyEvent();
 
 		// disable
 		glDisableVertexAttribArray(vPositionID);
@@ -372,9 +374,9 @@ void MyWindow::MouseEvent()
 		else if (gMouseButton == GLFW_MOUSE_BUTTON_MIDDLE) {
 			// middle, move the object
 			glm::vec4 viewport(0, 0, width, height);
-			glm::vec3 projected = glm::project(mesh->Position(), View*Model, Projection, viewport);
+			glm::vec3 projected = glm::project(-mesh->Translation(), View*Model, Projection, viewport);
 
-			mesh->Position() = glm::unProject(projected + glm::vec3(dx, -dy, 0.), View*Model, Projection, viewport);
+			mesh->Translation() = -glm::unProject(projected + glm::vec3(-dx, dy, 0.), View*Model, Projection, viewport);
 		}
 		else if (gMouseButton == GLFW_MOUSE_BUTTON_RIGHT) {
 			// right
@@ -388,11 +390,6 @@ void MyWindow::MouseEvent()
 		// released
 		if (gMouseButton == GLFW_MOUSE_BUTTON_LEFT) {
 			// left
-			if (windowState == WINDOW_MOD_LABEL) {
-				LabelMesh();
-				labelUpdated = true;
-				windowState = WINDOW_MOD_DEFAULT;
-			}
 		}
 	}
 
@@ -401,3 +398,20 @@ void MyWindow::MouseEvent()
 	lastCursorPosY = ypos;
 }
 
+void MyWindow::KeyEvent()
+{
+	if (gKeyState == GLFW_PRESS) {
+
+	}
+	else if (gKeyState == GLFW_RELEASE) {
+		// release
+		if (gKey == GLFW_KEY_LEFT_CONTROL && windowState == WINDOW_MOD_LABEL) {
+			LabelMesh();
+			labelUpdated = true;
+			windowState = WINDOW_MOD_DEFAULT;
+		}
+	}
+	else {
+
+	}
+}

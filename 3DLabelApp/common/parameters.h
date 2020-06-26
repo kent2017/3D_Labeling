@@ -33,6 +33,12 @@ extern int gMouseState;			// press or release
 extern double gScrollXOffset;
 extern double gScrollYOffset;
 
+/* key parameters */
+extern int gKey;
+extern int gKeyState;
+extern int gKeyScancode;
+extern int gKeyMods;
+
 /* drop parameters */
 extern std::vector<std::string> gPaths;		// the dropped paths on the window
 

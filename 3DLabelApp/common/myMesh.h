@@ -39,13 +39,13 @@ public:
 	int nVertices() const { return vertices.cols(); }
 	int nTriangles() const { return triangles.cols(); }
 
-	inline const glm::vec3& Position() const { return position; }
-	inline glm::vec3& Position() { return position; }
+	inline const glm::vec3& Translation() const { return translation; }
+	inline glm::vec3& Translation() { return translation; }
 
 	inline const glm::vec3& Scale() const { return scale; }
 	inline glm::vec3& Scale() { return scale; }
 
-	inline glm::mat4 ModelMat() const { return glm::scale(glm::translate(glm::mat4(1.0), position), scale); }
+	inline glm::mat4 ModelMat() const { return glm::translate(glm::scale(glm::mat4(1.0), scale), translation); }
 
 	void UpdateVertexLabels();
 	void UpdateVertexColors();
@@ -58,7 +58,7 @@ public:
 
 private:
 	_MyMesh _mesh;
-	glm::vec3 position;
+	glm::vec3 translation;
 	glm::vec3 scale = glm::vec3(1., 1., 1.);
 
 	void UpdateAll();

@@ -90,9 +90,9 @@ Eigen::Matrix3Xf LabelTool::GetViewportCoordFromScreen() const
 		retMat(2, i) = screenCoords[i](2);
 	}
 
-	retMat(0, n) = screenCoords[0](0);
-	retMat(1, n) = screenCoords[0](1);
-	retMat(2, n) = screenCoords[0](2);
+	retMat(0, n) = retMat(0, 0);
+	retMat(1, n) = retMat(1, 0);
+	retMat(2, n) = retMat(2, 0);
 
 	return retMat;
 }
@@ -137,11 +137,13 @@ Eigen::ArrayXi LabelTool::IsInsidePolygon(const Eigen::Matrix3Xf & points, const
 		Eigen::ArrayXf thetas = signs.array() * Eigen::acos(a);
 
 		float thetaTotal = std::abs(thetas.sum());
-		if (std::abs(thetaTotal - 2.f*_PI) < 1.e-4)
+		if (std::abs(thetaTotal - 2.f*_PI) < 0.01f)
 			ret(i) = 1;
 		else
 			ret(i) = 0;
 	}
+
+	int a = ret.sum();
 
 	return ret;
 }
