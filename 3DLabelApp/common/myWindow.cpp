@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 
 #include "common/myWindow.h"
@@ -135,8 +136,30 @@ void MyWindow::ReadLabelFile(const std::string & fp)
 	}
 }
 
+void MyWindow::WriteLabelFile(const std::string & outFile) const
+{
+	std::ofstream f;
+	f.open(outFile, 'w');
+
+	auto triLabels = meshes[curVAOIdx]->triangle_labels;
+	for (int i = 0; i < triLabels.cols(); i++)
+		f << triLabels(i) << std::endl;
+
+	f.close();
+}
+
 void MyWindow::ReadLabelFile_TXT(const std::string & fp)
 {
+	auto mesh = meshes[curVAOIdx];
+	std::ifstream f(fp, 'r');
+
+	Eigen::ArrayXi triLabels(mesh->triangles.cols());
+
+	for (int i = 0; i < triLabels.cols(); i++) {
+		f >> triLabels(i);
+	}
+
+	f.close();
 }
 
 void MyWindow::ReadLabelFile_H5(const std::string & h5File)
@@ -217,12 +240,14 @@ void MyWindow::LabelMesh()
 	Eigen::Matrix4f mvp = GlmToEigen(Projection*View*Model);
 
 	// determine the maxDepthOffset
-	glm::vec3 dir = glm::normalize(camera.Eye() - camera.Center());
+	glm::vec3 dir = glm::normalize(camera.Center() - camera.Eye());
 	float length = 2.5f * mesh->Scale()[0];
-	float depth1 = glm::project(glm::vec3(0., 0., 0.), View*Model, Projection, glm::vec4(0, 0, width, height))[2];
-	float depth2 = glm::project(glm::vec3(0., 0., 0.) + dir*length, View*Model, Projection, glm::vec4(0, 0, width, height))[2];
+	glm::vec3 refP = camera.Eye() + dir *length;
+	float depth1 = glm::project(refP, View/**Model*/, Projection, glm::vec4(0, 0, width, height))[2];
+	float depth2 = glm::project(refP + dir*length, View/**Model*/, Projection, glm::vec4(0, 0, width, height))[2];
 
-	float maxDepthOffset = depth2 - depth1;
+	//float maxDepthOffset = depth2 - depth1;
+	float maxDepthOffset = 0.3;
 
 	labelTool.Set(mvp, 0, 0, width, height, maxDepthOffset);
 	auto vertexLabels = labelTool.CalcVertexLabels(mesh->vertices, mesh->triangles);

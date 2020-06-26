@@ -56,6 +56,9 @@ public:
 	void UpdateDupVertexLabels();
 	void UpdateDupVertexColors();
 
+	// max connected components
+	Eigen::ArrayXi GetMaxConnectedComponentsTriangles(const Eigen::ArrayXi& triangleLabels, int seedTriIdx) const;
+
 private:
 	_MyMesh _mesh;
 	glm::vec3 translation;

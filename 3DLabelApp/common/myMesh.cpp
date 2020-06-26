@@ -173,13 +173,14 @@ void MyMesh::UpdateTriangleLabelsFromVertexLabels()
 	triangle_labels = Eigen::ArrayXi(nTriangles());
 
 	for (int i = 0; i < nTriangles(); i++) {
-		int _min = 1000;
+		int cnt = 0;
 		for (int j = 0; j < 3; j++) {
 			int idx = triangles(j, i);
-			_min = std::min(_min, vertex_labels(idx));
+			if (vertex_labels(idx) == 1)
+				cnt++;
 		}
 
-		triangle_labels(i) = _min;
+		triangle_labels(i) = cnt >= 2 ? 1 : 0;
 	}
 }
 

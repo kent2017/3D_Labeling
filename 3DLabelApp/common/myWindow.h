@@ -33,6 +33,7 @@ public:
 
 	void ReadMeshFile(const std::string& inputFile);
 	void ReadLabelFile(const std::string& inputFile);
+	void WriteLabelFile(const std::string& outFile) const;
 
 private:
 	void InitializeGL();
