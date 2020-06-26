@@ -220,7 +220,7 @@ void MyWindow::LabelMesh()
 	glm::vec3 dir = glm::normalize(camera.Eye() - camera.Center());
 	float length = 2.5f * mesh->Scale()[0];
 	float depth1 = glm::project(glm::vec3(0., 0., 0.), View*Model, Projection, glm::vec4(0, 0, width, height))[2];
-	float depth2 = glm::project(glm::vec3(0., 0., 0.) + length, View*Model, Projection, glm::vec4(0, 0, width, height))[2];
+	float depth2 = glm::project(glm::vec3(0., 0., 0.) + dir*length, View*Model, Projection, glm::vec4(0, 0, width, height))[2];
 
 	float maxDepthOffset = depth2 - depth1;
 
