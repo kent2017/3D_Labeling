@@ -214,7 +214,15 @@ void MyWindow::LabelMesh()
 	auto mesh = meshes[curVAOIdx];
 	Eigen::Matrix4f mvp = GlmToEigen(Projection*View*Model);
 
-	labelTool.Set(mvp, 0, 0, width, height);
+	// determine the maxDepthOffset
+	glm::vec3 dir = glm::normalize(camera.Eye() - camera.Center());
+	float length = 2.5f * mesh->Scale()[0];
+	float depth1 = glm::project(glm::vec3(0., 0., 0.), View*Model, Projection, glm::vec4(0, 0, width, height))[2];
+	float depth2 = glm::project(glm::vec3(0., 0., 0.) + length, View*Model, Projection, glm::vec4(0, 0, width, height))[2];
+
+	float maxDepthOffset = depth2 - depth1;
+
+	labelTool.Set(mvp, 0, 0, width, height, maxDepthOffset);
 	auto vertexLabels = labelTool.CalcVertexLabels(mesh->vertices, mesh->triangles);
 	labelTool.Clear();		// remember clear
 
@@ -243,6 +251,7 @@ Eigen::Matrix4f MyWindow::GlmToEigen(const glm::mat4 & mat)
 			m(i, j) = mat[j][i];
 		}
 	}
+
 	return m;
 }
 

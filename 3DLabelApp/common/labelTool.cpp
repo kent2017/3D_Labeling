@@ -1,12 +1,13 @@
 #include "labelTool.h"
 
-void LabelTool::Set(const Eigen::Matrix4f & mvp, int x, int y, int width, int height)
+void LabelTool::Set(const Eigen::Matrix4f & mvp, int x, int y, int width, int height, float maxDepthOffset)
 {
 	this->mvp = mvp;
 	this->x = x;
 	this->y = y;
 	this->width = width;
 	this->height = height;
+	this->maxDepthOffset = maxDepthOffset;
 }
 
 void LabelTool::Clear()
@@ -40,20 +41,20 @@ Eigen::ArrayXi LabelTool::CalcVertexLabels(const Eigen::Matrix3Xf & vertices, co
 	Eigen::ArrayXi ret;
 
 	// 1. trans the coords of vertices and pixels to viewport coords
-	Eigen::Matrix3Xf projVertices = ProjectToViewportCoord(vertices);		// viewport coords
+	Eigen::Matrix3Xf projVertices = Project(vertices);		// viewport coords
 	Eigen::Matrix3Xf polygon = GetViewportCoordFromScreen();
 
 	// 2. get the indices of the vertices inside the polygon whose vertices are the pixels
 	Eigen::ArrayXi isInside = IsInsidePolygon(projVertices, polygon);
 
 	// 3. get the indices of the vertices on the front side
-	Eigen::ArrayXi isFront = IsFront(projVertices, polygon);
+	Eigen::ArrayXi isFront = IsFront(projVertices, polygon, isInside);
 
 	ret = isInside*isFront;
 	return ret;
 }
 
-Eigen::Matrix3Xf LabelTool::ProjectToViewportCoord(const Eigen::Matrix3Xf & points) const
+Eigen::Matrix3Xf LabelTool::Project(const Eigen::Matrix3Xf & points) const
 {
 	int cols = points.cols();
 
@@ -65,9 +66,10 @@ Eigen::Matrix3Xf LabelTool::ProjectToViewportCoord(const Eigen::Matrix3Xf & poin
 
 	Eigen::Matrix4Xf projected = mvp * homoCoords;
 	projected = projected.array().rowwise() / projected.row(3).array();		// x, y are in [-1, 1]
+	projected = (projected * 0.5f).colwise() + Eigen::Vector4f::Ones()*0.5f;
 
-	projected.row(0) = ((projected.row(0) * 0.5f).array() + 0.5f)*width + x;		// now x is in [width, height]
-	projected.row(1) = ((projected.row(1) * 0.5f).array() + 0.5f)*height + y;		// now y is in [width, height]
+	projected.row(0) = (projected.row(0)*width).array() + x;		// now x is in [width, height]
+	projected.row(1) = (projected.row(1)*height).array() + y;		// now y is in [width, height]
 
 	// return
 	Eigen::Matrix3Xf retV(3, cols);
@@ -144,17 +146,26 @@ Eigen::ArrayXi LabelTool::IsInsidePolygon(const Eigen::Matrix3Xf & points, const
 	return ret;
 }
 
-Eigen::ArrayXi LabelTool::IsFront(const Eigen::Matrix3Xf & points, const Eigen::Matrix3Xf & poly) const
+Eigen::ArrayXi LabelTool::IsFront(const Eigen::Matrix3Xf & points, const Eigen::Matrix3Xf & poly, const Eigen::ArrayXi& isInsidePoly) const
 {
-	float depth_min = points.row(2).minCoeff();
-	float depth_max = points.row(2).maxCoeff();
+	// 1. determine the minimum depth of points which are inside the polygon.
+	float depthMin = 1000.f;
 
-	float depth_front = poly.row(2).minCoeff();
+	for (int i = 0; i < points.cols(); i++) {
+		if (isInsidePoly(i) && points(2, i) < depthMin) {
+			depthMin = points(2, i);
+		}
+	}
+
+	float depthMax = depthMin + maxDepthOffset;
 
 	Eigen::ArrayXi ret(points.cols());
 	for (int i = 0; i < points.cols(); i++) {
-
+		if (points(2, i) >= depthMin && points(2, i) <= depthMax)
+			ret(i) = 1;
+		else
+			ret(i) = 0;
 	}
 
-	return Eigen::ArrayXi();
+	return ret;
 }

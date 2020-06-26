@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iterator>
 #include <string.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "common/myMesh.h"
 
@@ -11,12 +13,9 @@ std::string inputFile = "E:/StandardLower.stl";
 
 int main()
 {
-	if (!mesh.ReadMesh(inputFile)){
-		std::cerr << "read error\n";
-	}
-
-	Eigen::ArrayXi a = Eigen::ArrayXi::Zero(10);
-	a(0) = 1;
+	//if (!mesh.ReadMesh(inputFile)){
+	//	std::cerr << "read error\n";
+	//}
 
     return 0;
 }

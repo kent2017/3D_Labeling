@@ -71,4 +71,9 @@
       <Filter>shader</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\deps\eigen.natvis">
+      <Filter>资源文件</Filter>
+    </Natvis>
+  </ItemGroup>
 </Project>
