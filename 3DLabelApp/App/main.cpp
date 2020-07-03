@@ -10,7 +10,7 @@ std::string inputFile = R"(D:\MyProjects\3D_Labeling\src\C01000597025_L.stl)";
 
 
 int main() {
-	MyWindow window(1024, 768);
+	MyWindow window(1920, 1024);
 	if (!window.Init()) {
 		return -1;
 	}
