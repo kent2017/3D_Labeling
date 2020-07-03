@@ -90,9 +90,10 @@ private:
 	GLuint lightPosID;
 
 	unsigned int curVAOIdx = 0;	// current idx of the mesh
-	GLuint vaos[MAX_NUM_OF_MESHES];
-	GLuint elementBuffers[MAX_NUM_OF_MESHES];
-	GLuint vertexBuffers[MAX_NUM_OF_MESHES], vertexColorBuffers[MAX_NUM_OF_MESHES], vertexNormalBuffers[MAX_NUM_OF_MESHES];
+	// back and front
+	GLuint vaos[2];
+	//GLuint elementBuffers[2];
+	GLuint vertexBuffers[1], vertexColorBuffers[1], vertexNormalBuffers[2];
 
 	/**/
 	bool GL_Initialized = false;

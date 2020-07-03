@@ -62,8 +62,8 @@ void MyWindow::Run()
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glUseProgram(programID);
 
+		glUseProgram(programID);
 		SetMVP();
 		SetLight();
 
@@ -73,21 +73,33 @@ void MyWindow::Run()
 		}
 
 		// attrib
-		glEnableVertexAttribArray(vPositionID);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[curVAOIdx]);
-		glVertexAttribPointer(vPositionID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		for (int i = 0; i < 2; i++) {
 
-		glEnableVertexAttribArray(vNormalID);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexNormalBuffers[curVAOIdx]);
-		glVertexAttribPointer(vNormalID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+			// This is important for rendering back faces.
+			if (i == 0)
+				glFrontFace(GL_CCW);
+			else
+				glFrontFace(GL_CW);
 
-		glEnableVertexAttribArray(vColorID);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffers[curVAOIdx]);
-		glVertexAttribPointer(vColorID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+			glBindVertexArray(vaos[i]);
 
-		glBindVertexArray(vaos[0]);
-		//glDrawElements(GL_TRIANGLES, mesh->nTriangles()*3, GL_UNSIGNED_INT, (void*)0);
-		glDrawArrays(GL_TRIANGLES, 0, mesh->dup_vertices.cols());
+			glEnableVertexAttribArray(vPositionID);
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[0]);
+			glVertexAttribPointer(vPositionID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+			glEnableVertexAttribArray(vNormalID);
+			glBindBuffer(GL_ARRAY_BUFFER, vertexNormalBuffers[i]);
+			glVertexAttribPointer(vNormalID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+			glEnableVertexAttribArray(vColorID);
+			glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffers[0]);
+			glVertexAttribPointer(vColorID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+			//glDrawElements(GL_TRIANGLES, mesh->nTriangles()*3, GL_UNSIGNED_INT, (void*)0);
+			glDrawArrays(GL_TRIANGLES, 0, mesh->dup_vertices.cols());
+
+			glBindVertexArray(0);
+		}
 
 		// scroll & mouse event should be after the glDraw
 		ScrollEvent();
@@ -170,41 +182,51 @@ void MyWindow::BindMeshVAO(int idx)
 {
 	const auto& mesh = meshes[idx];
 
-	// 1. vao
-	glBindVertexArray(vaos[idx]);
-
-	// 2. buffer data
 	// vertices
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[idx]);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[0]);
 	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->dup_vertices.cols() * sizeof(float), &mesh->dup_vertices(0, 0), GL_STATIC_DRAW);
 
-	// elements
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffers[idx]);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * mesh->nTriangles() * sizeof(mesh->triangles(0, 0)), &mesh->triangles(0, 0), GL_STATIC_DRAW);
-
-	// vertex normals
-	glBindBuffer(GL_ARRAY_BUFFER, vertexNormalBuffers[idx]);
-	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->dup_vertex_normals.cols() * sizeof(float), mesh->dup_vertex_normals.data(), GL_STATIC_DRAW);
-
 	// vertex colors
-	glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffers[idx]);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffers[0]);
 	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->dup_vertex_colors.cols() * sizeof(float), mesh->dup_vertex_colors.data(), GL_STATIC_DRAW);
 
-	// 3. attributes
-	// attrib buffer: vertices
-	glEnableVertexAttribArray(vPositionID);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[idx]);
-	glVertexAttribPointer(vPositionID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	for (int i = 0; i < 2; i++) {
+		// 1. vao
+		glBindVertexArray(vaos[i]);
 
-	// attrib buffer: vertex normals
-	glEnableVertexAttribArray(vNormalID);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexNormalBuffers[idx]);
-	glVertexAttribPointer(vNormalID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		// 2. buffer data
 
-	// attrib buffer: vertex colors
-	glEnableVertexAttribArray(vColorID);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffers[idx]);
-	glVertexAttribPointer(vColorID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		// elements
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffers[0]);
+		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * mesh->nTriangles() * sizeof(mesh->triangles(0, 0)), &mesh->triangles(0, 0), GL_STATIC_DRAW);
+
+		// vertex normals
+		glBindBuffer(GL_ARRAY_BUFFER, vertexNormalBuffers[i]);
+		if (i == 0)
+			// front
+			glBufferData(GL_ARRAY_BUFFER, 3 * mesh->dup_vertex_normals.cols() * sizeof(float), mesh->dup_vertex_normals.data(), GL_STATIC_DRAW);
+		else {
+			// back
+			Eigen::Matrix3Xf vNormalsBack = mesh->dup_vertex_normals * -1.f;
+			glBufferData(GL_ARRAY_BUFFER, 3 * mesh->dup_vertex_normals.cols() * sizeof(float), vNormalsBack.data(), GL_STATIC_DRAW);
+		}
+
+		// 3. attributes
+		// attrib buffer: vertices
+		//glEnableVertexAttribArray(vPositionID);
+		//glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[0]);
+		//glVertexAttribPointer(vPositionID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		//// attrib buffer: vertex normals
+		//glEnableVertexAttribArray(vNormalID);
+		//glBindBuffer(GL_ARRAY_BUFFER, vertexNormalBuffers[i]);
+		//glVertexAttribPointer(vNormalID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		//// attrib buffer: vertex colors
+		//glEnableVertexAttribArray(vColorID);
+		//glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffers[0]);
+		//glVertexAttribPointer(vColorID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	}
 }
 
 glm::vec3 MyWindow::TransPixelToModel(double xpos, double ypos) const
@@ -230,7 +252,7 @@ void MyWindow::UpdateColors()
 	auto mesh = meshes[curVAOIdx];
 	//mesh->UpdateVertexColors();
 	mesh->UpdateDupVertexColors();
-	glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffers[curVAOIdx]);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffers[0]);
 	glBufferData(GL_ARRAY_BUFFER, 3 * mesh->dup_vertex_colors.cols() * sizeof(float), mesh->dup_vertex_colors.data(), GL_STATIC_DRAW);
 }
 
@@ -288,11 +310,12 @@ void MyWindow::InitializeGL()
 	glClearColor(1.f, 1.f, 1.0f, 0.0f);
 	//glClearDepth(2.0);
 
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
+	glCullFace(GL_BACK);
 	//glEnable(GL_SMOOTH);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	/* 2. shader */
 	programID = LoadShaders("vert.glsl", "frag.glsl");
@@ -309,11 +332,11 @@ void MyWindow::InitializeGL()
 	vColorID = glGetAttribLocation(programID, "vColor");
 
 	/* 3. vaos & buffers */ 
-	glGenVertexArrays(MAX_NUM_OF_MESHES, vaos);
-	glGenBuffers(MAX_NUM_OF_MESHES, vertexBuffers);
+	glGenVertexArrays(2, vaos);
+	glGenBuffers(1, vertexBuffers);
 	//glGenBuffers(MAX_NUM_OF_MESHES, elementBuffers);
-	glGenBuffers(MAX_NUM_OF_MESHES, vertexColorBuffers);
-	glGenBuffers(MAX_NUM_OF_MESHES, vertexNormalBuffers);
+	glGenBuffers(1, vertexColorBuffers);
+	glGenBuffers(2, vertexNormalBuffers);
 
 	/* 4.  */
 	camera = MyCamera(glm::vec3(0, -100, 0), glm::vec3(0, 0, 0), glm::vec3(0, 0, -1));
@@ -324,11 +347,11 @@ void MyWindow::InitializeGL()
 void MyWindow::ClearGL()
 {
 	glDeleteProgram(programID);
-	glDeleteBuffers(MAX_NUM_OF_MESHES, vertexBuffers);
+	glDeleteBuffers(1, vertexBuffers);
 	//glDeleteBuffers(MAX_NUM_OF_MESHES, elementBuffers);
-	glDeleteBuffers(MAX_NUM_OF_MESHES, vertexColorBuffers);
-	glDeleteBuffers(MAX_NUM_OF_MESHES, vertexNormalBuffers);
-	glDeleteVertexArrays(MAX_NUM_OF_MESHES, vaos);
+	glDeleteBuffers(1, vertexColorBuffers);
+	glDeleteBuffers(2, vertexNormalBuffers);
+	glDeleteVertexArrays(2, vaos);
 }
 
 void MyWindow::SetMVP()

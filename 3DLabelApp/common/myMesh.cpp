@@ -194,7 +194,7 @@ void MyMesh::UpdateTriangleLabelsFromVertexLabels()
 				cnt++;
 		}
 
-		triangle_labels(i) = cnt >= 2 ? 1 : 0;
+		triangle_labels(i) = cnt >= 3 ? 1 : 0;
 	}
 }
 

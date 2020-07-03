@@ -6,7 +6,7 @@
 #include "common/myWindow.h"
 
 
-std::string inputFile = "D:/MyProjects/3D_Labeling/StandardLower.stl";
+std::string inputFile = "../../src/C01000713595_L.stl";
 
 
 int main() {

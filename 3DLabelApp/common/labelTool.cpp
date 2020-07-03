@@ -47,7 +47,12 @@ void LabelTool::AddLabels(MyMesh & mesh)
 	int idxMinDepth;
 	projected.row(2).minCoeff(&idxMinDepth);
 
-	mesh.triangle_labels = mesh.GetMaxConnectedComponentsTriangles(triangleLabels, idxMinDepth);
+	Eigen::ArrayXi addedLabels = mesh.GetMaxConnectedComponentsTriangles(triangleLabels, idxMinDepth);
+	for (int i = 0; i < addedLabels.size(); i++) {
+		if (addedLabels[i] > 0)
+			mesh.triangle_labels[i] = addedLabels[i];
+	}
+
 	mesh.UpdateVertexLabels();
 	mesh.UpdateTriangleLabelsFromVertexLabels();
 	mesh.UpdateDupVertexLabels();						// update dup_vertex
