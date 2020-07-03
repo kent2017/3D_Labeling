@@ -58,6 +58,31 @@ void LabelTool::AddLabels(MyMesh & mesh)
 	mesh.UpdateDupVertexLabels();						// update dup_vertex
 }
 
+void LabelTool::DeleteLabels(MyMesh & mesh)
+{
+	Eigen::ArrayXi triangleLabels = CalcLabels(mesh.triangle_centers);
+
+	// determine the frontmost center
+	Eigen::Matrix3Xf projected = Project(mesh.triangle_centers);
+	for (int i = 0; i < projected.cols(); i++) {
+		if (triangleLabels(i) == 0)
+			projected(2, i) = 100000.f;
+	}
+
+	int idxMinDepth;
+	projected.row(2).minCoeff(&idxMinDepth);
+
+	Eigen::ArrayXi deletedLabels = mesh.GetMaxConnectedComponentsTriangles(triangleLabels, idxMinDepth);
+	for (int i = 0; i < deletedLabels.size(); i++) {
+		if (deletedLabels[i] > 0)
+			mesh.triangle_labels[i] = 0;
+	}
+
+	mesh.UpdateVertexLabels();
+	mesh.UpdateTriangleLabelsFromVertexLabels();
+	mesh.UpdateDupVertexLabels();						// update dup_vertex
+}
+
 Eigen::ArrayXi LabelTool::CalcLabels(const Eigen::Matrix3Xf& points) const
 {
 	Eigen::ArrayXi ret;

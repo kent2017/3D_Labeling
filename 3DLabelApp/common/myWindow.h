@@ -57,6 +57,7 @@ private:
 
 	/** editing mode */
 	void LabelMesh();
+	void DelabelMesh();
 
 	/** helper functions */
 	void _check_shader_values();

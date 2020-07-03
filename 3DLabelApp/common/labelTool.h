@@ -23,6 +23,8 @@ public:
 	void pushback(float xpos, float ypos, float depth);
 
 	void AddLabels(MyMesh& mesh);
+	void DeleteLabels(MyMesh& mesh);
+
 	Eigen::ArrayXi CalcLabels(const Eigen::Matrix3Xf& points) const;
 
 private:

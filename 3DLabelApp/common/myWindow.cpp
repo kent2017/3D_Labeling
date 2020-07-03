@@ -169,6 +169,7 @@ void MyWindow::WriteLabelFile() const
 	meshes[curVAOIdx]->WriteLabels(outFile);
 
 	std::cout << "Save labels to " << outFile << std::endl;
+	std::cout << "# Remaining files: " << fileContainer.size() << std::endl;
 }
 
 void MyWindow::BindMeshVAO(int idx)
@@ -266,6 +267,26 @@ void MyWindow::LabelMesh()
 
 	labelTool.Set(mvp, 0, 0, width, height, maxDepthOffset);
 	labelTool.AddLabels(*mesh);
+	labelTool.Clear();		// remember clear
+}
+
+void MyWindow::DelabelMesh()
+{
+	auto mesh = meshes[curVAOIdx];
+	Eigen::Matrix4f mvp = GlmToEigen(Projection*View*Model);
+
+	// determine the maxDepthOffset
+	glm::vec3 dir = glm::normalize(camera.Center() - camera.Eye());
+	float length = 2.5f * mesh->GetScale()[0];
+	glm::vec3 refP = camera.Eye() + dir *length;
+	float depth1 = glm::project(refP, View/**Model*/, Projection, glm::vec4(0, 0, width, height))[2];
+	float depth2 = glm::project(refP + dir*length, View/**Model*/, Projection, glm::vec4(0, 0, width, height))[2];
+
+	//float maxDepthOffset = depth2 - depth1;
+	float maxDepthOffset = 0.3;
+
+	labelTool.Set(mvp, 0, 0, width, height, maxDepthOffset);
+	labelTool.DeleteLabels(*mesh);
 	labelTool.Clear();		// remember clear
 }
 
@@ -392,20 +413,40 @@ void MyWindow::MouseEvent()
 	if (gMouseState == GLFW_PRESS) {
 		if (gMouseButton == GLFW_MOUSE_BUTTON_LEFT) {
 			// left 
-			if (gModifierKey == GLFW_MOD_CONTROL) {
+			switch (gModifierKey)
+			{
+			case GLFW_MOD_CONTROL:
 				// control + left
 				windowState = WINDOW_MOD_LABEL;		// set window state
 
 				// get depth
-				GLfloat depth;
-				GLint winX = xpos;
-				GLint winY = height - (GLint)ypos;
-				glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);		// draw first, otherwise the depth will be always 1.0
+				{
+					GLfloat depth;
+					GLint winX = xpos;
+					GLint winY = height - (GLint)ypos;
+					glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);		// draw first, otherwise the depth will be always 1.0
 
-				labelTool.pushback(xpos, ypos, depth);
-			}
-			else {
+					labelTool.pushback(xpos, ypos, depth);
+				}
+				break;
+
+			case GLFW_MOD_ALT:	// alt
+				windowState = WINDOW_MOD_DELABEL;
+
+				{
+					GLfloat depth;
+					GLint winX = xpos;
+					GLint winY = height - (GLint)ypos;
+					glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);		// draw first, otherwise the depth will be always 1.0
+
+					labelTool.pushback(xpos, ypos, depth);
+				}
+				break;
+
+			default:
 				camera.Rotate(-dx / 500.f, dy / 500.f);
+				break;
+
 			}
 		}
 		else if (gMouseButton == GLFW_MOUSE_BUTTON_MIDDLE) {
@@ -469,10 +510,25 @@ void MyWindow::KeyEvent()
 	}
 	else if (gKeyState == GLFW_RELEASE) {
 		// release
-		if (gKey == GLFW_KEY_LEFT_CONTROL && windowState == WINDOW_MOD_LABEL) {
-			LabelMesh();
-			labelUpdated = true;
-			windowState = WINDOW_MOD_DEFAULT;
+		switch (gKey) {
+		case GLFW_KEY_LEFT_CONTROL:
+			if (windowState == WINDOW_MOD_LABEL) {
+				LabelMesh();
+				labelUpdated = true;
+				windowState = WINDOW_MOD_DEFAULT;
+			}
+			break;
+
+		case GLFW_KEY_LEFT_ALT:
+			if (windowState == WINDOW_MOD_DELABEL) {
+				DelabelMesh();
+				labelUpdated = true;
+				windowState = WINDOW_MOD_DEFAULT;
+			}
+			break;
+
+		default:
+			break;
 		}
 	}
 	else {

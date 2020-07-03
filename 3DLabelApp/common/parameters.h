@@ -8,6 +8,7 @@ A head file storing global parameters.
 /* window states */
 #define WINDOW_MOD_DEFAULT 0
 #define WINDOW_MOD_LABEL 1		// labeling mesh
+#define WINDOW_MOD_DELABEL 2	// delabel
 
 #include <vector>
 #include <string>
