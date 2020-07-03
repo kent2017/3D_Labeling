@@ -40,6 +40,6 @@ extern int gKeyScancode;
 extern int gKeyMods;
 
 /* drop parameters */
-extern std::vector<std::string> gPaths;		// the dropped paths on the window
+extern std::vector<std::string> gDroppedPaths;		// the dropped paths on the window
 
 #endif // !PARAMETERS_H

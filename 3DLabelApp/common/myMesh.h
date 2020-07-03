@@ -36,16 +36,20 @@ public:
 	MyMesh() {}
 	~MyMesh() {}
 	
+	/** IO */
 	bool ReadMesh(const std::string& inputFile);
+	bool ReadLabels(const std::string& labelFile);
+	bool WriteLabels(const std::string& outFile);
 
+	/** accessor */
 	int nVertices() const { return vertices.cols(); }
 	int nTriangles() const { return triangles.cols(); }
 
-	inline const glm::vec3& Translation() const { return translation; }
-	inline glm::vec3& Translation() { return translation; }
+	inline const glm::vec3& GetTranslation() const { return translation; }
+	inline void SetTranslation(const glm::vec3& _t) { translation = _t; }
 
-	inline const glm::vec3& Scale() const { return scale; }
-	inline glm::vec3& Scale() { return scale; }
+	inline const glm::vec3& GetScale() const { return scale; }
+	inline void SetScale(const glm::vec3& _s) { scale = _s; }
 
 	inline glm::mat4 ModelMat() const { return glm::translate(glm::scale(glm::mat4(1.0), scale), translation); }
 
@@ -62,6 +66,8 @@ public:
 	Eigen::ArrayXi GetMaxConnectedComponentsTriangles(const Eigen::ArrayXi& triangleLabels, int seedTriIdx);
 
 private:
+	std::string meshFilename;
+
 	_MyMesh _mesh;
 	glm::vec3 translation;
 	glm::vec3 scale = glm::vec3(1., 1., 1.);
@@ -78,6 +84,8 @@ private:
 	void UpdateDupVertexNormals();
 
 	// labels
+	bool ReadLabelTxt(const std::string& file);
+	bool ReadLabelH5(const std::string& file);
 };
 
 #endif // !MY_MESH_H

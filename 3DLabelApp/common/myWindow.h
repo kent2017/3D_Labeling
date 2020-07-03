@@ -11,6 +11,7 @@
 #include "common/myMesh.h"
 #include "common/myCamera.h"
 #include "common/labelTool.h"
+#include "common/fileContainer.h"
 
 #define MAX_NUM_OF_MESHES 2
 
@@ -32,8 +33,7 @@ public:
 	void Run();
 
 	void ReadMeshFile(const std::string& inputFile);
-	void ReadLabelFile(const std::string& inputFile);
-	void WriteLabelFile(const std::string& outFile) const;
+	void WriteLabelFile() const;
 
 private:
 	void InitializeGL();
@@ -47,10 +47,7 @@ private:
 	void ScrollEvent();
 	void MouseEvent();
 	void KeyEvent();
-
-	/** IO */
-	void ReadLabelFile_TXT(const std::string& txtFile);
-	void ReadLabelFile_H5(const std::string& h5File);
+	void DropEvent();
 
 	/** gl */
 	void BindMeshVAO(int idxMesh);
@@ -103,6 +100,7 @@ private:
 
 	/* file info */
 	std::string meshFile;
+	FileContainer fileContainer = FileContainer(".stl", ".label");
 
 	/* label tool */
 	LabelTool labelTool;

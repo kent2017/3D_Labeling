@@ -1,10 +1,14 @@
 #include "myMesh.h"
 
+#include <strstream>
+
 bool MyMesh::ReadMesh(const std::string& inputFile) {
 	std::cout << "Reading mesh file: " << inputFile << std::endl;
 	if (!OpenMesh::IO::read_mesh(_mesh, inputFile))
 		return false;
 	else {
+		meshFilename = inputFile;
+
 		std::cout << "# Vertices: " << _mesh.n_vertices() << std::endl;
 		std::cout << "# Edges   : " << _mesh.n_edges() << std::endl;
 		std::cout << "# Faces   : " << _mesh.n_faces() << std::endl;
@@ -24,6 +28,28 @@ bool MyMesh::ReadMesh(const std::string& inputFile) {
 
 		return true;
 	}
+}
+
+bool MyMesh::ReadLabels(const std::string & labelFile)
+{
+	std::string format = labelFile.substr(labelFile.find_last_of('.')+1);
+	if (format == "txt")
+		return ReadLabelTxt(labelFile);
+	else if (format == "h5")
+		return ReadLabelH5(labelFile);
+	else
+		return false;
+}
+
+bool MyMesh::WriteLabels(const std::string & outFile)
+{
+	std::ofstream ofs(outFile);
+	for (int i = 0; i < triangle_labels.size(); i++) {
+		ofs << i + 1 << ' ' << triangle_labels(i) << std::endl;
+	}
+	ofs.close();
+
+	return true;
 }
 
 void MyMesh::UpdateAll()
@@ -155,6 +181,47 @@ void MyMesh::UpdateDupVertexNormals()
 		dup_vertex_normals.col(3 * i + 2) = triangle_normals.col(i);
 	}
 
+}
+
+bool MyMesh::ReadLabelTxt(const std::string & file)
+{
+	if (file.size() == 0)
+		return false;
+
+	std::ifstream ifs(file);
+	if (ifs.fail())
+		return false;
+
+	std::vector<int> labels;
+	char buf[1024];
+	do
+	{
+		ifs.getline(buf, 1024);
+		std::istrstream iss(buf);
+
+		int x = -1, y;
+
+		iss >> x >> y;
+
+		labels.push_back(y);
+	} while (!ifs.eof());
+
+	ifs.close();
+
+	// labels size may be different
+	//if (labels.size() != triangle_labels.size())
+	//	return false;
+
+	for (int i = 0; i < labels.size() && i < triangle_labels.size(); i++) {
+		triangle_labels[i] = labels[i];
+	}
+
+	return true;
+}
+
+bool MyMesh::ReadLabelH5(const std::string & file)
+{
+	return false;
 }
 
 void MyMesh::UpdateVertexLabels()

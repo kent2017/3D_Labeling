@@ -105,6 +105,7 @@ void MyWindow::Run()
 		ScrollEvent();
 		MouseEvent();
 		KeyEvent();
+		DropEvent();
 
 		// disable
 		glDisableVertexAttribArray(vPositionID);
@@ -118,8 +119,21 @@ void MyWindow::Run()
 
 void MyWindow::ReadMeshFile(const std::string & inputFile)
 {
+	meshFile = inputFile;
+
 	std::shared_ptr<MyMesh>& mesh = meshes[0];
+
+	// reserve MVP
+	glm::vec3 translation(0.f);
+	glm::vec3 scale(1.0f);
+	if (mesh != nullptr) {
+		translation = mesh->GetTranslation();
+		scale = mesh->GetScale();
+	}
+
 	mesh = std::make_shared<MyMesh>();
+	mesh->SetTranslation(translation);
+	mesh->SetScale(scale);
 
 	if (!mesh->ReadMesh(inputFile)) {
 		std::cerr << "reading mesh file error\n";
@@ -130,52 +144,31 @@ void MyWindow::ReadMeshFile(const std::string & inputFile)
 		return;
 	}
 
+	std::string labelFile = inputFile.substr(0, inputFile.find_last_of('.')) + ".label";
+	if (mesh->ReadLabels(labelFile)) {
+		std::cout << "Read labels successfully" << std::endl;
+		mesh->UpdateDupVertexLabels();
+		mesh->UpdateDupVertexColors();
+	}
+	else {
+		labelFile = inputFile.substr(0, inputFile.find_last_of('.')) + ".txt";
+		if (mesh->ReadLabels(labelFile)) {
+			std::cout << "Read labels successfully" << std::endl;
+			mesh->UpdateDupVertexLabels();
+			mesh->UpdateDupVertexColors();
+		}
+	}
+
 	BindMeshVAO(0);
 }
 
-void MyWindow::ReadLabelFile(const std::string & fp)
+void MyWindow::WriteLabelFile() const
 {
-	std::string format= fp.substr(fp.find_last_of(".") + 1);
+	std::string outFile = meshFile.substr(0, meshFile.find_last_of('.')) + ".label";
 
-	if (format == "txt"){
-		ReadLabelFile_TXT(fp);
-	}
-	else if (format == "h5") {
-		ReadLabelFile_H5(fp);
-	}
-	else {
-		assert(0);
-	}
-}
+	meshes[curVAOIdx]->WriteLabels(outFile);
 
-void MyWindow::WriteLabelFile(const std::string & outFile) const
-{
-	std::ofstream f;
-	f.open(outFile, 'w');
-
-	auto triLabels = meshes[curVAOIdx]->triangle_labels;
-	for (int i = 0; i < triLabels.cols(); i++)
-		f << triLabels(i) << std::endl;
-
-	f.close();
-}
-
-void MyWindow::ReadLabelFile_TXT(const std::string & fp)
-{
-	auto mesh = meshes[curVAOIdx];
-	std::ifstream f(fp, 'r');
-
-	Eigen::ArrayXi triLabels(mesh->triangles.cols());
-
-	for (int i = 0; i < triLabels.cols(); i++) {
-		f >> triLabels(i);
-	}
-
-	f.close();
-}
-
-void MyWindow::ReadLabelFile_H5(const std::string & h5File)
-{
+	std::cout << "Save labels to " << outFile << std::endl;
 }
 
 void MyWindow::BindMeshVAO(int idx)
@@ -263,7 +256,7 @@ void MyWindow::LabelMesh()
 
 	// determine the maxDepthOffset
 	glm::vec3 dir = glm::normalize(camera.Center() - camera.Eye());
-	float length = 2.5f * mesh->Scale()[0];
+	float length = 2.5f * mesh->GetScale()[0];
 	glm::vec3 refP = camera.Eye() + dir *length;
 	float depth1 = glm::project(refP, View/**Model*/, Projection, glm::vec4(0, 0, width, height))[2];
 	float depth2 = glm::project(refP + dir*length, View/**Model*/, Projection, glm::vec4(0, 0, width, height))[2];
@@ -378,8 +371,10 @@ void MyWindow::ScrollEvent()
 	if (std::abs(gScrollYOffset) < 0.00001)
 		return;
 
-	float p = std::min(0.15f, meshes[curVAOIdx]->Scale()[0]*0.25f);
-	meshes[curVAOIdx]->Scale() += gScrollYOffset > 0.f ? -p : p;
+	float p = std::min(0.15f, meshes[curVAOIdx]->GetScale()[0]*0.25f);
+	glm::vec3 scale = meshes[curVAOIdx]->GetScale() + glm::vec3(gScrollYOffset > 0.f ? -p : p);
+	meshes[curVAOIdx]->SetScale(scale);
+	//meshes[curVAOIdx]->Scale() += gScrollYOffset > 0.f ? -p : p;
 
 	gScrollYOffset = 0.f;
 }
@@ -416,9 +411,9 @@ void MyWindow::MouseEvent()
 		else if (gMouseButton == GLFW_MOUSE_BUTTON_MIDDLE) {
 			// middle, move the object
 			glm::vec4 viewport(0, 0, width, height);
-			glm::vec3 projected = glm::project(-mesh->Translation(), View*Model, Projection, viewport);
+			glm::vec3 projected = glm::project(-mesh->GetTranslation(), View*Model, Projection, viewport);
 
-			mesh->Translation() = -glm::unProject(projected + glm::vec3(-dx, dy, 0.), View*Model, Projection, viewport);
+			mesh->SetTranslation(-glm::unProject(projected + glm::vec3(-dx, dy, 0.), View*Model, Projection, viewport));
 		}
 		else if (gMouseButton == GLFW_MOUSE_BUTTON_RIGHT) {
 			// right
@@ -443,7 +438,34 @@ void MyWindow::MouseEvent()
 void MyWindow::KeyEvent()
 {
 	if (gKeyState == GLFW_PRESS) {
+		switch (gKeyMods) {
+			// control
+		case GLFW_MOD_CONTROL:
+			switch (gKey) {
+			case GLFW_KEY_S:		// control + S
+				WriteLabelFile();
+				break;
+			}
+			break;
 
+			// alt
+		case GLFW_MOD_ALT:
+			break;
+
+			// shift
+		case GLFW_MOD_SHIFT:
+			break;
+
+		default:
+			switch (gKey) {
+			case GLFW_KEY_SPACE:	// space, next
+				if (fileContainer.size() > 0) {
+					std::string file = fileContainer.Pop();
+					ReadMeshFile(file);
+				}
+				break;
+			}
+		}
 	}
 	else if (gKeyState == GLFW_RELEASE) {
 		// release
@@ -455,5 +477,19 @@ void MyWindow::KeyEvent()
 	}
 	else {
 
+	}
+}
+
+void MyWindow::DropEvent()
+{
+	if (!gDroppedPaths.empty()) {
+
+		fileContainer.Clear();
+		fileContainer.Init(gDroppedPaths);
+		if (fileContainer.size() > 0) {
+			ReadMeshFile(fileContainer.Pop());
+		}
+
+		gDroppedPaths.clear();
 	}
 }

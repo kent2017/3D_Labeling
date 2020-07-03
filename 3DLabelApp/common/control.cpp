@@ -4,7 +4,7 @@
 double gScrollXOffset = 0.f;
 double gScrollYOffset = 0.f;
 
-std::vector<std::string> gPaths;
+std::vector<std::string> gDroppedPaths;
 
 int gMouseButton = -1;		// left, middle, right, etc..
 int gModifierKey = 0;		// shift, alt, control, ...
@@ -22,9 +22,9 @@ void funcScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 
 void funcDropCallback(GLFWwindow * window, int path_count, const char * paths[])
 {
-	gPaths.clear();
+	gDroppedPaths.clear();
 	for (int i = 0; i < path_count; i++) {
-		gPaths.push_back(std::string(paths[i]));
+		gDroppedPaths.push_back(std::string(paths[i]));
 	}
 }
 
