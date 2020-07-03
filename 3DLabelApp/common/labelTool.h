@@ -3,6 +3,7 @@
 
 #define _PI 3.14159265359
 
+#include "myMesh.h"
 #include <vector>
 
 #include <Eigen/Core>
@@ -21,7 +22,8 @@ public:
 
 	void pushback(float xpos, float ypos, float depth);
 
-	Eigen::ArrayXi CalcVertexLabels(const Eigen::Matrix3Xf& vertices, const Eigen::Matrix3Xi& triangles) const;
+	void AddLabels(MyMesh& mesh);
+	Eigen::ArrayXi CalcLabels(const Eigen::Matrix3Xf& points) const;
 
 private:
 	Eigen::Matrix3Xf Project(const Eigen::Matrix3Xf& points) const;		// trans object coord to window coord

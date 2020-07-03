@@ -23,6 +23,8 @@ public:
 	Eigen::ArrayXi triangle_labels;
 	Eigen::ArrayXi vertex_labels;
 
+	Eigen::Matrix3Xf triangle_centers;
+
 	Eigen::Matrix3Xf dup_vertices;	// duplicates, for render, (n_f * 3, 3)
 	Eigen::Matrix3Xf dup_vertex_normals;
 	Eigen::Matrix3Xf dup_vertex_colors;
@@ -57,7 +59,7 @@ public:
 	void UpdateDupVertexColors();
 
 	// max connected components
-	Eigen::ArrayXi GetMaxConnectedComponentsTriangles(const Eigen::ArrayXi& triangleLabels, int seedTriIdx) const;
+	Eigen::ArrayXi GetMaxConnectedComponentsTriangles(const Eigen::ArrayXi& triangleLabels, int seedTriIdx);
 
 private:
 	_MyMesh _mesh;
@@ -69,6 +71,7 @@ private:
 	void UpdateTriangles();
 	void UpdateTriangleNormals();
 	void UpdateVertexNormals();
+	void UpdateTriangleCenters();
 
 	// duplicate vertices
 	void UpdateDupVertices();

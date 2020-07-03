@@ -32,6 +32,7 @@ void MyMesh::UpdateAll()
 	UpdateTriangles();
 	UpdateVertexNormals();
 	UpdateTriangleNormals();
+	UpdateTriangleCenters();
 	
 	// dup
 	UpdateDupVertices();
@@ -111,6 +112,22 @@ void MyMesh::UpdateVertexNormals()
 	vertex_normals = mat;
 }
 
+void MyMesh::UpdateTriangleCenters()
+{
+	Eigen::Matrix3Xf mat(3, _mesh.n_faces());
+
+	int i = 0;
+	for (_MyMesh::FaceIter f_it = _mesh.faces_begin(); f_it != _mesh.faces_end(); f_it++) {
+		_MyMesh::Normal c = _mesh.calc_face_centroid(*f_it);
+		mat(0, i) = c[0];
+		mat(1, i) = c[1];
+		mat(2, i) = c[2];
+		i++;
+	}
+
+	triangle_centers = mat;
+}
+
 void MyMesh::UpdateDupVertices()
 {
 	Eigen::Matrix3Xf v(3, nTriangles()*3);
@@ -162,9 +179,6 @@ void MyMesh::UpdateVertexColors()
 		vertex_colors(1, i) = COLORS[k][1];
 		vertex_colors(2, i) = COLORS[k][2];
 	}
-
-	for (int i = 0; i < triangle_labels.cols(); i++) {
-	}
 }
 
 void MyMesh::UpdateTriangleLabelsFromVertexLabels()
@@ -204,5 +218,34 @@ void MyMesh::UpdateDupVertexColors()
 		dup_vertex_colors(1, i) = COLORS[k][1];
 		dup_vertex_colors(2, i) = COLORS[k][2];
 	}
+}
+
+Eigen::ArrayXi MyMesh::GetMaxConnectedComponentsTriangles(const Eigen::ArrayXi & triangleLabels, int seedTriIdx) 
+{
+	Eigen::ArrayXi ret = Eigen::ArrayXi::Zero(triangleLabels.size());
+	Eigen::ArrayXi visited = Eigen::ArrayXi::Zero(triangleLabels.size());
+
+	std::vector<int> stack;
+	stack.push_back(seedTriIdx);
+	visited(seedTriIdx) = 1;
+
+	while (!stack.empty()) {
+		int curIdx = stack[0];
+		ret[curIdx] = 1;
+
+		stack.erase(stack.begin());
+		
+		_MyMesh::FaceHandle fh = _mesh.face_handle(curIdx);
+		_MyMesh::FaceFaceIter ff_it;
+		for (ff_it = _mesh.ff_iter(fh); ff_it.is_valid(); ++ff_it) {
+			int idx = ff_it->idx();
+			if (ff_it.is_valid() && !visited(idx) && triangleLabels(idx)==1) {
+				stack.push_back(idx);
+				visited(idx) = 1;
+			}
+		}
+	}
+
+	return ret;
 }
 

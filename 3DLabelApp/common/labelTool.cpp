@@ -33,15 +33,32 @@ void LabelTool::pushback(float xpos, float ypos, float depth)
 	}
 }
 
-Eigen::ArrayXi LabelTool::CalcVertexLabels(const Eigen::Matrix3Xf & vertices, const Eigen::Matrix3Xi & triangles) const
+void LabelTool::AddLabels(MyMesh & mesh)
 {
-	int nVertices = vertices.cols();
-	int nTriangles = triangles.cols();
+	Eigen::ArrayXi triangleLabels = CalcLabels(mesh.triangle_centers);
 
+	// determine the frontmost center
+	Eigen::Matrix3Xf projected = Project(mesh.triangle_centers);
+	for (int i = 0; i < projected.cols(); i++) {
+		if (triangleLabels(i) == 0)
+			projected(2, i) = 100000.f;
+	}
+
+	int idxMinDepth;
+	projected.row(2).minCoeff(&idxMinDepth);
+
+	mesh.triangle_labels = mesh.GetMaxConnectedComponentsTriangles(triangleLabels, idxMinDepth);
+	mesh.UpdateVertexLabels();
+	mesh.UpdateTriangleLabelsFromVertexLabels();
+	mesh.UpdateDupVertexLabels();						// update dup_vertex
+}
+
+Eigen::ArrayXi LabelTool::CalcLabels(const Eigen::Matrix3Xf& points) const
+{
 	Eigen::ArrayXi ret;
 
 	// 1. trans the coords of vertices and pixels to viewport coords
-	Eigen::Matrix3Xf projVertices = Project(vertices);		// viewport coords
+	Eigen::Matrix3Xf projVertices = Project(points);		// viewport coords
 	Eigen::Matrix3Xf polygon = GetViewportCoordFromScreen();
 
 	// 2. get the indices of the vertices inside the polygon whose vertices are the pixels

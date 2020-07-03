@@ -250,14 +250,8 @@ void MyWindow::LabelMesh()
 	float maxDepthOffset = 0.3;
 
 	labelTool.Set(mvp, 0, 0, width, height, maxDepthOffset);
-	auto vertexLabels = labelTool.CalcVertexLabels(mesh->vertices, mesh->triangles);
+	labelTool.AddLabels(*mesh);
 	labelTool.Clear();		// remember clear
-
-	if (vertexLabels.cols() == mesh->vertex_labels.cols()) {
-		mesh->vertex_labels = vertexLabels;
-		mesh->UpdateTriangleLabelsFromVertexLabels();
-		mesh->UpdateDupVertexLabels();
-	}
 }
 
 void MyWindow::_check_shader_values()
