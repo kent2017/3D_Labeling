@@ -11,9 +11,10 @@ A head file storing global parameters.
 #define WINDOW_MOD_DELABEL 2	// delabel
 
 #include <vector>
+#include <array>
 #include <string>
 
-const float COLORS[9][3] = {
+const std::vector<std::array<float, 3>> COLORS{
 	{0.9, 0.9, 0.9},
 	{1.0, 0.7, 0.0}, // yellow
 	{0.9, 0.7, 0.6}, // pink
@@ -22,6 +23,7 @@ const float COLORS[9][3] = {
 	{0.9, 0.6, 0.9}, // purple
 	{0.0, 0.8, 0.9},
 	{0.6, 0.4, 0.4},
+	{0.6, 0.7, 0.1},
 	{0.9, 0.9, 0.3}
 };
 

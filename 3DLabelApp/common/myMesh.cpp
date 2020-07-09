@@ -242,9 +242,14 @@ void MyMesh::UpdateVertexColors()
 {
 	for (int i = 0; i < vertex_colors.cols(); i++) {
 		int k = vertex_labels(i);
-		vertex_colors(0, i) = COLORS[k][0];
-		vertex_colors(1, i) = COLORS[k][1];
-		vertex_colors(2, i) = COLORS[k][2];
+		int idx_color = 0;
+		if (k > 0) {
+			idx_color = (k - 1) % (COLORS.size() - 1) + 1;
+		}
+
+		vertex_colors(0, i) = COLORS[idx_color][0];
+		vertex_colors(1, i) = COLORS[idx_color][1];
+		vertex_colors(2, i) = COLORS[idx_color][2];
 	}
 }
 
@@ -281,9 +286,13 @@ void MyMesh::UpdateDupVertexColors()
 	dup_vertex_colors = Eigen::Matrix3Xf(3, dup_vertices.cols());
 	for (int i = 0; i < dup_vertices.cols(); i++) {
 		int k = dup_vertex_labels(i);
-		dup_vertex_colors(0, i) = COLORS[k][0];
-		dup_vertex_colors(1, i) = COLORS[k][1];
-		dup_vertex_colors(2, i) = COLORS[k][2];
+		int idx_color = 0;
+		if (k > 0) {
+			idx_color = (k - 1) % (COLORS.size() - 1) + 1;
+		}
+		dup_vertex_colors(0, i) = COLORS[idx_color][0];
+		dup_vertex_colors(1, i) = COLORS[idx_color][1];
+		dup_vertex_colors(2, i) = COLORS[idx_color][2];
 	}
 }
 
