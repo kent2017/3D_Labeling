@@ -21,8 +21,11 @@ void FileContainer::Init(const std::vector<std::string>& dirsOrFiles)
 				}
 			}
 		}
-		else if (path.substr(path.find_last_of('.')) == meshFormat)
-			filepaths.push_back(path);
+		else {
+			auto format = path.substr(path.find_last_of('.'));
+			if (format == meshFormat || format == ".obj")
+				filepaths.push_back(path);
+		}
 	}
 }
 
