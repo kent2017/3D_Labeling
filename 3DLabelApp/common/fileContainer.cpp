@@ -19,6 +19,17 @@ void FileContainer::Init(const std::vector<std::string>& dirsOrFiles)
 					if (!fs::exists(labelFile))
 						filepaths.push_back(entry.path().generic_string());
 				}
+				else if (fs::is_directory(entry)) {
+					for (const auto& e : fs::directory_iterator(entry)) {
+						if (e.path().extension().generic_string() == meshFormat) {
+							std::string fn = e.path().generic_string();
+							fn = fn.substr(0, fn.find_last_of('.')) + labelFormat;
+							fs::path labelFile(fn);
+							if (!fs::exists(labelFile))
+								filepaths.push_back(e.path().generic_string());
+						}
+					}
+				}
 			}
 		}
 		else {
