@@ -1,6 +1,8 @@
 #include "myMesh.h"
 
 #include <strstream>
+#include <sstream>
+
 
 bool MyMesh::ReadMesh(const std::string& inputFile) {
 	std::cout << "Reading mesh file: " << inputFile << std::endl;
@@ -193,18 +195,17 @@ bool MyMesh::ReadLabelTxt(const std::string & file)
 		return false;
 
 	std::vector<int> labels;
-	char buf[1024];
-	do
-	{
-		ifs.getline(buf, 1024);
-		std::istrstream iss(buf);
-
-		int x = -1, y;
-
-		iss >> x >> y;
-
-		labels.push_back(y);
-	} while (!ifs.eof());
+	std::string line;
+	while (std::getline(ifs, line)) {
+		std::istringstream iss(line);
+		int x, y;
+		if (!(iss >> x >> y)) {
+			labels.push_back(x);
+		}
+		else {
+			labels.push_back(y);
+		}
+	}
 
 	ifs.close();
 
