@@ -505,6 +505,9 @@ void MyWindow::KeyEvent()
 					ReadMeshFile(file);
 				}
 				break;
+			case GLFW_KEY_S:
+				WriteLabelFile();
+				break;
 			}
 		}
 	}
