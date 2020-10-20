@@ -47,7 +47,7 @@ bool MyMesh::WriteLabels(const std::string & outFile)
 {
 	std::ofstream ofs(outFile);
 	for (int i = 0; i < triangle_labels.size(); i++) {
-		ofs << i + 1 << ' ' << triangle_labels(i) << std::endl;
+		ofs << triangle_labels(i) << std::endl;
 	}
 	ofs.close();
 
