@@ -35,7 +35,7 @@ bool MyMesh::ReadMesh(const std::string& inputFile) {
 bool MyMesh::ReadLabels(const std::string & labelFile)
 {
 	std::string format = labelFile.substr(labelFile.find_last_of('.')+1);
-	if (format == "txt")
+	if (format == "txt" || format == "label")
 		return ReadLabelTxt(labelFile);
 	else if (format == "h5")
 		return ReadLabelH5(labelFile);
