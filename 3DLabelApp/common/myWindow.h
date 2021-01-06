@@ -72,6 +72,7 @@ private:
 	/* window state */
 	int windowState = WINDOW_MOD_DEFAULT;
 	bool labelUpdated = false;
+	int key = -1;
 
 	/* view & projection */
 	float fov = glm::radians(45.f);		// field of view

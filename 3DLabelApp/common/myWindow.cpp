@@ -500,13 +500,10 @@ void MyWindow::KeyEvent()
 		default:
 			switch (gKey) {
 			case GLFW_KEY_SPACE:	// space, next
-				if (fileContainer.size() > 0) {
-					std::string file = fileContainer.Pop();
-					ReadMeshFile(file);
-				}
+				key = GLFW_KEY_SPACE;
 				break;
 			case GLFW_KEY_S:
-				WriteLabelFile();
+				key = GLFW_KEY_S;
 				break;
 			}
 		}
@@ -531,6 +528,19 @@ void MyWindow::KeyEvent()
 			break;
 
 		default:
+			switch (key) {
+			case GLFW_KEY_SPACE:	// space, next
+				if (fileContainer.size() > 0) {
+					key = -1;
+					std::string file = fileContainer.Pop();
+					ReadMeshFile(file);
+				}
+				break;
+			case GLFW_KEY_S:
+				key = -1;
+				WriteLabelFile();
+				break;
+			}
 			break;
 		}
 	}
